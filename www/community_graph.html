@@ -1,0 +1,83 @@
+<style>
+#communities {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  position: absolute;
+}
+</style>
+
+<div id="communities"></div>
+
+<script>
+
+// An additional function added to get all the neighbors of a vertex
+sigma.classes.graph.addMethod('neighbors', function(nodeId) {
+  var k,
+  neighbors = {},
+  index = this.allNeighborsIndex[nodeId] || {};
+
+  for (k in index)
+    neighbors[k] = this.nodesIndex[k];
+
+  return neighbors;
+});
+
+sigma.parsers.json( "data/communities.json",
+
+  {container: 'communities'},
+
+  function(s) { //This function is passed an instance of Sigma s
+
+    // Initial node config, random (x,y) 
+    s.graph.nodes().forEach(function(node, i, a) {
+      node.x = Math.random() * 10;
+      node.y = Math.random() * 10;
+      node.color = "#2A9FD6"
+    });
+
+    //Call refresh to render the new graph
+    s.refresh();
+
+    // Finally, turn on force atlas 2
+    s.startForceAtlas2({startingIterations:150, 
+      iterationsPerRender:50, 
+      barnesHutOptimize:false,
+      adjustSizes:true,
+      worker:true,
+      strongGravityMode:true,
+      lingLogMode:true
+    });
+
+    function stop(){
+      s.killForceAtlas2();
+    }
+
+    window.setTimeout(stop, 8000);
+    s.refresh();
+
+    // Add in the interactivity so that I know which community was clicked on
+    s.bind('clickNode', function(e) {
+      window.console.log(e.type, e.data.node.label, e.data.captor);
+      Shiny.onInputChange("comm_id", e.data.node.hiddenLabel);
+
+      // color everything blue, but then color the clicked node purple
+      s.graph.nodes().forEach(function(n) {
+        n.color = "#2A9FD6";
+      });      
+      e.data.node.color = "#9933CC";
+      s.refresh();
+    });
+
+    s.bind('clickStage', function(e) {
+      s.graph.nodes().forEach(function(n) {
+        n.color = "#2A9FD6";
+      });
+      Shiny.onInputChange("comm_id", null);
+      s.refresh();
+    });
+
+});
+</script>
+

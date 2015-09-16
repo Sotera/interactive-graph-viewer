@@ -1,0 +1,16 @@
+This is an R Shiny app for interactively viewing the results of the Louvain
+method for community detection.
+
+For the moment I'm using prebuilt graphs (in .json files in ./www/data) from
+Baylor's protein-protein interaction data.
+
+To run:
+
+1. Download and install R Studio
+2. Install the Shiny package by running the command
+
+    install.packages("Shiny")
+
+    at the R command line
+
+3. Open all of the .R files in this repo and click "run app" in R studio
