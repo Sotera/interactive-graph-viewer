@@ -12,30 +12,35 @@ function(input, output, session){
   source("external/graph_utils.R", local = TRUE)
   source("external/makenetjson.R", local = TRUE)
 
+  v <- reactiveValues(community = NULL)
   
   # reset button
   observeEvent(input$reset_button, {
-    updateNumericInput(session, "comm_id", value = -1)
-    graph <<- NULL
-    communities <<- NULL
+    v$community = NULL
+    print(v$community)
+  })
+  
+  # on-click from sigma.js
+  observeEvent(input$comm_id, {
+    v$community = input$comm_id
+    print(v$community)
   })
   
   # Regenerate the current graph visualization
   output$graph_with_sigma <- renderUI({
-    
+    print("-----------")
     # Get the community id
-    id <- input$comm_id 
+    id <- v$community
+    print(id)
     
-    # If we don't already have a graph build one
-    if (is.null(graph)){
+    # If we don't have a community then build the first graph,
+    # otherwise select the desired community subgraph
+    if (is.null(id)){
       graph <<- build_initial_graph(initial_data)
-    }
-    
-    # If we selected a community zoom into just that community
-    if (!is.null(id) && id >0){
+    } else {
       print("Trying to subgraph")
-      graph <<- community_subgraph(graph, communities, id)
-    } 
+      graph <<- community_subgraph(graph, communities, id)      
+    }
     
     # if the graph we are looking at has more than 200 points 
     # run community detection to make it easier to visualize
