@@ -1,135 +1,86 @@
 <style>
-#community_subgraph {
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  position: absolute;
-}
+    #graph2 {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        position: absolute;
+    }
 </style>
 
-<div id="community_subgraph"></div>
+<div id="graph2"></div>
 
 <script>
+    sigma.parsers.json("data/current_graph.json",
 
-g = sigma.parsers.json( "data/current_graph.json",
+        {
+            container: 'graph2'
+        },
 
-  {container: 'community_subgraph'},
+        function(s) { //This function is passed an instance of Sigma s
 
-  function(g) { //This function is passed an instance of Sigma 
+            // Initial node config, random (x,y) 
+            s.graph.nodes().forEach(function(node, i, a) {
+                node.x = Math.random() * 10;
+                node.y = Math.random() * 10;
+                switch (node.type) {
+                    case "Chemical":
+                        node.color = "#FF8800";
+                        node.originalColor = "#FF8800";
+                        break;
 
+                    case "Disease":
+                        node.color = "#CC0000";
+                        node.originalColor = "#CC0000";;
+                        break;
 
-    // I want to try to set the parameters for my layout based on the size of the graph
-    nvertex = g.graph.nodes().length;
-    timeout = Math.min(1000 + 10 * nvertex  * nvertex * nvertex, 2 * 60 * 1000); // maximum time for layout is 2 min
-    window.console.log("Timeout is "+ timeout/1000. + " seconds")
-    approx_forces = false;
-    boxsize = 10 / nvertex;
-    if (nvertex > 100){
-      approx_forces = true;
-    }
-    iterPerImage = 2 + Math.sqrt(nvertex);
+                    case "Protein":
+                        node.color = "#77B300";
+                        node.originalColor = "#77B300";
+                        break;
 
-    // debug
-    window.console.log("# of nodes = " + nvertex)
+                    case "Community":
+                        node.color = "#2A9FD6";
+                        node.originalColor = "#2A9FD6";
+                        break;
 
-    //Initialize nodes randomly 
-    g.graph.nodes().forEach(function(node, i, a) {
+                    default:
+                        break;
+                }
+            });
 
-      angle = 2 * Math.PI * Math.random()
-      node.x = Math.sin(angle) * boxsize;
-      node.y = Math.cos(angle) * boxsize;
+            //Call refresh to render the new graph
+            s.refresh();
 
-      switch(node.type){
-        case "Chemical":
-        node.color = "#FF8800";
-        node.originalColor = "#FF8800";
-        break;
+            // Finally, turn on force atlas 2
+            s.startForceAtlas2({
+                startingIterations: 150,
+                iterationsPerRender: 50,
+                barnesHutOptimize: false,
+                adjustSizes: true,
+                worker: true,
+                strongGravityMode: true,
+                lingLogMode: true
+            });
 
-        case "Disease":
-        node.color = "#CC0000";
-        node.originalColor = "#CC0000";;
-        break;
+            function stop() {
+                s.killForceAtlas2();
+            }
 
-        case "Protein":
-        node.color = "#77B300";
-        node.originalColor = "#77B300";
-        break;
+            window.setTimeout(stop, 8000);
+            s.refresh();
 
-        case "Community":
-        node.color = "#2A9FD6";
-        node.originalColor = "#2A9FD6";
-        break;
+            // action if we click on a node
+            s.bind('clickNode', function(e) {
+                window.console.log(e.type, e.data.node.label, e.data.captor);
+                Shiny.onInputChange("comm_id", e.data.node.label);
+            });
 
-        default:
-        break;
-      }
-    });
-
-    //Call refresh to render the new graph
-    g.refresh();
-
-    // Finally, turn on force atlas 2
-    g.startForceAtlas2({startingIterations:iterPerImage*100, 
-      iterationsPerRender:iterPerImage, 
-      barnesHutOptimize:approx_forces,
-      adjustSizes:true,
-      strongGravityMode:true,
-      worker:true
-    });
-
-    function stop(){
-      g.killForceAtlas2();
-    }
-
-    window.setTimeout(stop, timeout);
-    g.refresh();
+            // action if we click on the background 
+            //s.bind('clickStage', function(e)){
+            //    Shiny.onInputChange("comm_id", null)
+            //}
 
 
-
- // When a node is clicked, we check for each node
-      // if it is a neighbor of the clicked one. If not,
-      // we set its color as grey, and else, it takes its
-      // original color.
-      // We do the same for the edges, and we only keep
-      // edges that have both extremities colored.
-      g.bind('clickNode', function(e) {
-        var nodeId = e.data.node.id,
-        toKeep = g.graph.neighbors(nodeId);
-        toKeep[nodeId] = e.data.node;
-
-        g.graph.nodes().forEach(function(n) {
-          if (toKeep[n.id])
-            n.color = n.originalColor;
-          else
-            n.color = '#555';
         });
-
-        g.refresh();
-      });
-
-      // When the stage is clicked, we just color each
-      // node and edge with its original color.
-      g.bind('clickStage', function(e) {
-        g.graph.nodes().forEach(function(n) {
-          n.color = n.originalColor;
-        });
-      });
-
-        // Same as in the previous event:
-        s.refresh();
-      });
-
-
-    // Add in the interactivity so that I know which community was clicked on
-    s.bind('clickNode', function(e) {
-      window.console.log(e.type, e.data.node.label, e.data.captor);
-      Shiny.onInputChange("comm_id", e.data.node.hiddenLabel);
-
-
-
-    });
-
 </script>
-
-

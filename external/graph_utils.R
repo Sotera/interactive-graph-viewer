@@ -1,3 +1,5 @@
+library(igraph)
+
 
 build_initial_graph <-function (file){
   # Uses igraph to parse the initial, full graph
@@ -13,19 +15,15 @@ build_initial_graph <-function (file){
 }
 
 
-graph_to_sigma_json <-function (graph){
-  # converts an igraph graph into json that sigma will understand
-  # igraph writes the graph out as xml and I use a python utility 
-  # to convert it into a json 
-  write.graph(graph = graph, 
-              file = "./www/data/tmp.xml",
-              format = "graphml")
-  cmd <- "/usr/local/bin/python xml_to_json.py"
-  system(cmd)
-}
-
-
 get_communities <- function(graph){
   # Runs louvain community detection
   return(multilevel.community(graph))
+}
+
+
+community_subgraph <- function(graph, communities, community_id){
+  # Builds a subgraph of one community from the original graph
+  idx <- which(communities$membership == community_id)
+  subgraph <- induced.subgraph(graph, idx)
+  return(subgraph)
 }

@@ -24,6 +24,12 @@ shinyUI(
               column(6, tags$h3("Details", align = "left"))
             ),
             
+            #extra buttons
+            
+            fluidRow(
+              actionButton("reset_button", "Reset")
+              ),
+            
             # graphs
             fluidRow(
               column(6, 
@@ -31,9 +37,6 @@ shinyUI(
                                  width="1000",
                                  height="800"),
                      uiOutput("graph_with_sigma")
-              ),
-              
-              column(6,   
               )
             )
                      
