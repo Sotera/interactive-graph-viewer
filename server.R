@@ -12,24 +12,24 @@ function(input, output, session){
   source("external/graph_utils.R", local = TRUE)
   source("external/makenetjson.R", local = TRUE)
 
-  v <- reactiveValues(community = NULL, current_graph_type = NULL)
+  global_state <- reactiveValues(community = NULL, current_graph_type = NULL)
   
   # reset button
   observeEvent(input$reset_button, {
-    v$community = NULL
+    global_state$community = NULL
   })
   
   # on-click from sigma.js
   observeEvent(input$comm_id, {
     if (v$current_graph_type == "community"){
-      v$community = input$comm_id
+      global_state$community = input$comm_id
     }
   })
   
   # Regenerate the current graph visualization
   output$graph_with_sigma <- renderUI({
     # Get the community id
-    id <- v$community
+    id <- global_state$community
 
     # If we don't have a community then build the first graph,
     # otherwise select the desired community subgraph
@@ -46,10 +46,15 @@ function(input, output, session){
       V(graph)$comm <-communities$membership
       contracted <- contract.vertices(graph, communities$membership, "random")
       community_graph <- simplify(contracted, "random")
+      V(community_graph)$name <- V(community_graph)$comm
+      V(community_graph)$size <- 1
+      
+      
+      global_state$current_graph_type = "community"
       makenetjson(community_graph, "./www/data/current_graph.json", comm_graph = TRUE)  
-      v$current_graph_type = "community"
     } else {
-      v$current_graph_type = "not_community"
+      graph$size <- 1
+      global_state$current_graph_type = "not_community"
       makenetjson(graph, "./www/data/current_graph.json", comm_graph = FALSE)   
     }
     
