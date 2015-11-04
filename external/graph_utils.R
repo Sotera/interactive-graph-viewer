@@ -1,3 +1,4 @@
+library(plyr)
 library(igraph)
 
 
@@ -20,8 +21,22 @@ get_communities <- function(graph){
   return(multilevel.community(graph))
 }
 
+get_community_graph <- function(graph, communities){
+  # Builds a graph of the communities
+  V(graph)$comm <-communities$membership
+  contracted <- contract.vertices(graph, communities$membership, "random")
+  community_graph <- simplify(contracted, "random")
+  V(community_graph)$name <- V(community_graph)$comm
+  
+  # Set the size of each node to be proportional to the community size
+  counts <- count(communities$membership)
+  V(community_graph)$size <- counts$freq
+  
+  
+  return(community_graph)
+}
 
-community_subgraph <- function(graph, communities, community_id){
+subgraph_of_one_community <- function(graph, communities, community_id){
   # Builds a subgraph of one community from the original graph
   idx <- which(communities$membership == community_id)
   subgraph <- induced.subgraph(graph, idx)
