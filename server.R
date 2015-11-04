@@ -28,7 +28,6 @@ function(input, output, session){
   
   # Regenerate the current graph visualization
   output$graph_with_sigma <- renderUI({
-    print("-----------")
     # Get the community id
     id <- v$community
 
