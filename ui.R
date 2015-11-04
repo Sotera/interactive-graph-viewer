@@ -37,7 +37,9 @@ shinyUI(
                                  width="1000",
                                  height="800"),
                      uiOutput("graph_with_sigma")
-              )
+              ),
+              column(6, 
+                     plotOutput("degree_distribution"))
             )
                      
             

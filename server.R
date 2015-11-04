@@ -12,7 +12,8 @@ function(input, output, session){
   source("external/graph_utils.R", local = TRUE)
   source("external/makenetjson.R", local = TRUE)
 
-  global_state <- reactiveValues(community = NULL, current_graph_type = NULL)
+  global_state <- reactiveValues(community = NULL, 
+                                 current_graph_type = NULL)
   
   # reset button
   observeEvent(input$reset_button, {
@@ -21,7 +22,7 @@ function(input, output, session){
   
   # on-click from sigma.js
   observeEvent(input$comm_id, {
-    if (v$current_graph_type == "community"){
+    if (global_state$current_graph_type == "community"){
       global_state$community = input$comm_id
     }
   })
@@ -36,29 +37,28 @@ function(input, output, session){
     if (is.null(id)){
       graph <<- build_initial_graph(initial_data)
     } else {
-      graph <<- community_subgraph(graph, communities, id)      
+      graph <<- subgraph_of_one_community(graph, communities, id)      
     }
     
     # if the graph we are looking at has more than 200 points 
     # run community detection to make it easier to visualize
     if (vcount(graph) > 500){
       communities <<- get_communities(graph)
-      V(graph)$comm <-communities$membership
-      contracted <- contract.vertices(graph, communities$membership, "random")
-      community_graph <- simplify(contracted, "random")
-      V(community_graph)$name <- V(community_graph)$comm
-      V(community_graph)$size <- 1
-      
-      
+      community_graph <- get_community_graph(graph, communities)
       global_state$current_graph_type = "community"
       makenetjson(community_graph, "./www/data/current_graph.json", comm_graph = TRUE)  
     } else {
-      graph$size <- 1
+      V(graph)$size <- 1
       global_state$current_graph_type = "not_community"
       makenetjson(graph, "./www/data/current_graph.json", comm_graph = FALSE)   
     }
     
     return(includeHTML("./www/graph.html"))
+  })
+  
+  # Plot the degree distribution of the current graph
+  output$degree_distribution <- renderPlot({
+    hist(degree(graph))
   })
   
 }
