@@ -4,7 +4,7 @@ library(shiny)
 shinyUI(
   fluidPage(theme="custom.css",
             tags$head(
-              tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
+              tags$link(rel = "stylesheet", type = "text/css", href = "bootstrap-darkly.css"),
               tags$script(src='lib/sigma.min.js'),
               tags$script(src='lib/sigma.layout.forceAtlas2.min.js'),
               tags$script(src='lib/sigma.parsers.json.min.js')
