@@ -3,3 +3,7 @@
 .RData
 
 www/data/current_graph.json
+
+*.json
+
+www/data/current_graph.json
