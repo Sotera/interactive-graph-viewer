@@ -1,7 +1,9 @@
 #server.R
 
+library(DT)
 library(shiny)
 library(igraph)
+library(ggplot2)
 
 initial_data <- "./www/data/ctd.csv"
 graph <- NULL
@@ -46,19 +48,44 @@ function(input, output, session){
       communities <<- get_communities(graph)
       community_graph <- get_community_graph(graph, communities)
       global_state$current_graph_type = "community"
-      makenetjson(community_graph, "./www/data/current_graph.json", comm_graph = TRUE)  
+      makenetjson(community_graph, "./www/data/current_graph.json", comm_graph = TRUE) 
+      update_stats(community_graph)
     } else {
       V(graph)$size <- 1
       global_state$current_graph_type = "not_community"
-      makenetjson(graph, "./www/data/current_graph.json", comm_graph = FALSE)   
+      makenetjson(graph, "./www/data/current_graph.json", comm_graph = FALSE)
+      update_stats(graph)
     }
     
     return(includeHTML("./www/graph.html"))
   })
   
+  
+  update_stats <- function(graph){
+    nodes <- get.data.frame(graph, what="vertices")
+    print(head(nodes))
+    nodes$degree <- degree(graph)
+    print(head(nodes$degree))
+    #nodes$rank <- page_rank(graph, directed = FALSE)
+    global_state$nodes <- nodes
+  }
+  
   # Plot the degree distribution of the current graph
-  output$degree_distribution <- renderPlot({
-    hist(degree(graph))
+  output$degree_distribution <- renderPlot({  
+    if (!is.null(global_state$nodes)){
+      #hist(global_state$nodes$degree) 
+      ggplot(global_state$nodes, aes(x=degree)) + geom_histogram(alpha=.3)
+    }
   })
+  
+  # Generate a table of node degrees
+  output$degree_table <- DT::renderDataTable({
+    if (!is.null(global_state$nodes)){
+      table <- global_state$nodes[c("name", "degree")]
+         
+    }
+  })
+  
+  
   
 }

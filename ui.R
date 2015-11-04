@@ -1,4 +1,5 @@
 ## ui.R ##
+library(DT)
 library(shiny)
 
 shinyUI(
@@ -38,7 +39,8 @@ shinyUI(
                                  height="800"),
                      uiOutput("graph_with_sigma")
               ),
-              column(6, 
+              column(6,
+                     DT::dataTableOutput("degree_table"),
                      plotOutput("degree_distribution"))
             )
                      

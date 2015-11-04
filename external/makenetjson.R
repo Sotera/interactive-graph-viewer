@@ -24,21 +24,6 @@ makenetjson<-function(gcomm, filename, comm_graph){
     nodedf$label= nodedf$name
   }
   
-  # if(is.null(nodedf$name)){
-  #    nodedf$id=as.character(1:vcount(gcomm))
-  #  } else{
-  #    nodedf$id=rownames(nodedf)
-  #  }
-  #  if(!is.null(rownames(nodedf))){
-  #    nodedf$label=as.character(1:vcount(gcomm))
-  #  }
-  #  rownames(nodedf)=NULL;
-  #  if(is.null(nodedf$label)){
-  #    nodedf$label=as.character(1:vcount(gcomm))
-  #  } 
-  #  nodedf$label=as.character(1:vcount(gcomm))
-  
-  
   edgedf=get.data.frame(gcomm, what="edges");
   edgeids=vector("character", ecount(gcomm))
   for(i in 1:ecount(gcomm)){edgeids[i]=paste0("e", as.character(i))}
