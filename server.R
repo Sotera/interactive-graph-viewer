@@ -82,8 +82,7 @@ function(input, output, session){
   output$degree_table <- DT::renderDataTable({
     if (!is.null(global_state$nodes)){
       table <- global_state$nodes[c("name", "degree")]
-         
-    }
+    } 
   })
   
   
