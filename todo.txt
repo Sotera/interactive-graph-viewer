@@ -1,0 +1,27 @@
+(1) filtering the network. 
+    just show protein-protein interactions (after running community detection on everything)
+    have some dialog box for picking the interaction we want to show
+
+(2) Search box ? Find which community a node is in and then highlight it in the graph
+
+(3) Summary of network 
+    Number of nodes
+    Number of edges
+
+(4) fix the graph layout
+
+(5) Clean up summary box. 
+    Order nodes by degree
+    Remove row label
+    if time: click on row in box highlights node in graph
+
+
+(6) Add other info tabs
+    pagerank
+    coloring options
+
+(7) Handling the "zoom" better
+    Being able to up arbitrary levels (how do I show it, how do I do it)
+    Layout issues .. no more random position (the same graph should have the same layout. either do it in R or stop the random javascript part)
+
+(8) Fix color scheme (keep everything to shinydashboard)
