@@ -13,7 +13,7 @@ function(input, output, session){
   
   source("external/graph_utils.R", local = TRUE)
   source("external/makenetjson.R", local = TRUE)
-
+  
   global_state <- reactiveValues(community = NULL, 
                                  current_graph_type = NULL)
   
@@ -33,7 +33,7 @@ function(input, output, session){
   output$graph_with_sigma <- renderUI({
     # Get the community id
     id <- global_state$community
-
+    
     # If we don't have a community then build the first graph,
     # otherwise select the desired community subgraph
     if (is.null(id)){
@@ -83,7 +83,9 @@ function(input, output, session){
     if (!is.null(global_state$nodes)){
       table <- global_state$nodes[c("name", "degree")]
     } 
-  })
+  }, options = list(order = list(list(1, 'desc'))),
+  rownames = FALSE
+  )
   
   
   

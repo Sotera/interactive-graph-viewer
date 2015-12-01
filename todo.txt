@@ -5,6 +5,8 @@
 (2) Search box ? Find which community a node is in and then highlight it in the graph
 
 (3) Summary of network 
+    Number of nodes
+    Number of edges
 
 (4) fix the graph layout
 
