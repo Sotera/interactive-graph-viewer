@@ -96,6 +96,11 @@ function(input, output, session){
     options = list(order = list(list(1, 'desc'))),
     rownames = FALSE
   )
+  
+  
+  newf <-function(){
+    print("stuff")
+  }
 
 
 
