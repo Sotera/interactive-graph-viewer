@@ -11,7 +11,7 @@ makenetjson<-function(gcomm, filename, comm_graph){
   #  - y
   # - type (I'll base the color of the node off of type in the javascript)
   
-  gcommlayout=layout.random(gcomm, dim=2);
+  gcommlayout=layout_with_kk(gcomm, kkconst = vcount(gcomm)/2);
   V(gcomm)$x=gcommlayout[,1]
   V(gcomm)$y=gcommlayout[,2]
   
