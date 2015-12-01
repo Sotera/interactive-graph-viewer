@@ -97,12 +97,5 @@ function(input, output, session){
     rownames = FALSE
   )
   
-  
-  newf <-function(){
-    print("stuff")
-  }
-
-
-
 
 }
