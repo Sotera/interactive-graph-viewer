@@ -49,26 +49,27 @@ function(input, output, session){
       community_graph <- get_community_graph(graph, communities)
       global_state$current_graph_type = "community"
       makenetjson(community_graph, "./www/data/current_graph.json", comm_graph = TRUE) 
-      update_stats(community_graph)
+      update_stats(community_graph, global_state$current_graph_type)
     } else {
       V(graph)$size <- 1
       global_state$current_graph_type = "not_community"
       makenetjson(graph, "./www/data/current_graph.json", comm_graph = FALSE)
-      update_stats(graph)
+      update_stats(graph, global_state$current_graph_type)
     }
     
     return(includeHTML("./www/graph.html"))
   })
   
   
-  update_stats <- function(graph){
+  update_stats <- function(graph, state){
     nodes <- get.data.frame(graph, what="vertices")
-    print(head(nodes))
     nodes$degree <- degree(graph)
     nodes$pagerank <- page_rank(graph)$vector
-    print(head(nodes$degree))
-    print(head(nodes$pagerank))
-    colnames(nodes) <- c("Name", "Type", "Comm", "Size", "Degree", "PageRank")
+    if (state == 'community'){
+      colnames(nodes) <- c("Name", "Type", "Comm", "Size", "Degree", "PageRank")
+    } else {
+      colnames(nodes) <- c("Name", "Type", "Comm", "Degree", "PageRank")
+    }
     global_state$nodes <- nodes
   }
   

@@ -4,7 +4,7 @@ library(shiny)
 library(shinydashboard)
 
 
-header <- dashboardHeader(title = "Community Visualization v2.0")
+header <- dashboardHeader(title = "Community Visualization v2.0", titleWidth = 450)
 
 sidebar <- dashboardSidebar(
   p("Communities are ", span("blue", style = "color:#2A9FD6")), 
@@ -32,7 +32,7 @@ body <- dashboardBody(
     
     tabBox( title = "Details", 
          id = "details",
-         selected = "Tab1",
+         selected = "Entities",
          tabPanel("Entities", DT::dataTableOutput("degree_table")),
          tabPanel("Degrees", plotOutput("degree_distribution")),
          tabPanel("PageRanks", plotOutput("pagerank_distribution"))
