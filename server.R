@@ -65,28 +65,38 @@ function(input, output, session){
     nodes <- get.data.frame(graph, what="vertices")
     print(head(nodes))
     nodes$degree <- degree(graph)
+    nodes$pagerank <- page_rank(graph)$vector
     print(head(nodes$degree))
-    #nodes$rank <- page_rank(graph, directed = FALSE)
+    print(head(nodes$pagerank))
+    colnames(nodes) <- c("Name", "Type", "Comm", "Size", "Degree", "PageRank")
     global_state$nodes <- nodes
   }
   
   # Plot the degree distribution of the current graph
   output$degree_distribution <- renderPlot({  
     if (!is.null(global_state$nodes)){
-      #hist(global_state$nodes$degree) 
-      ggplot(global_state$nodes, aes(x=degree)) + geom_histogram(alpha=.3)
+      ggplot(global_state$nodes, aes(x=Degree)) + geom_histogram(alpha=.3)
     }
+  })
+  
+  # Plot the pagerank distribution of the current graph
+  output$pagerank_distribution <- renderPlot({
+    if (!is.null(global_state$nodes)){
+      ggplot(global_state$nodes, aes(x=PageRank)) + geom_histogram(alpha=.3)
+    }    
   })
   
   # Generate a table of node degrees
   output$degree_table <- DT::renderDataTable({
     if (!is.null(global_state$nodes)){
-      table <- global_state$nodes[c("name", "degree")]
-    } 
-  }, options = list(order = list(list(1, 'desc'))),
-  rownames = FALSE
+      table <- global_state$nodes[c("Name", "Degree", "PageRank")]
+      }
+    },
+    options = list(order = list(list(1, 'desc'))),
+    rownames = FALSE
   )
-  
-  
-  
+
+
+
+
 }
