@@ -11,6 +11,7 @@ sidebar <- dashboardSidebar(
   p("Proteins are ",  span("green", style = "color:#77B300")),
   p("Chemicals are ", span("orange", style = "color:#FF8800")), 
   p("Diseases are ", span("red", style = "color:#CC0000")),
+  actionButton("back_button", "Back"),
   actionButton("reset_button", "Reset")
 )
 
