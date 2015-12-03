@@ -13,53 +13,57 @@ communities <- get_communities(graph)
 s <- rstack()
 
 function(input, output, session){ 
-  global_state <- reactiveValues()
-  global_state$is_comm_graph = TRUE
-  global_state$viz_stack <- insert_top(s, list(graph, communities, TRUE))
+  global <- reactiveValues()
+  global$is_comm_graph = TRUE
+  global$viz_stack <- insert_top(s, list(graph, communities, TRUE))
+  global$name <- ""
   
   # reset button
   observeEvent(input$reset_button, {
     graph <- build_initial_graph(initial_data)
     communities <- get_communities(graph)
-    global_state$viz_stack <- rstack()
-    global_state$viz_stack <- insert_top(global_state$viz_stack, list(graph, communities, TRUE))
+    global$viz_stack <- rstack()
+    global$viz_stack <- insert_top(global$viz_stack, list(graph, communities, TRUE))
+    global$name <- ""
   })
   
   # back button
   observeEvent(input$back_button, {
-    size <- length(global_state$viz_stack)
+    size <- length(global$viz_stack)
     if (size > 1){
-      global_state$viz_stack <- without_top(global_state$viz_stack)
+      global$viz_stack <- without_top(global$viz_stack)
+      global$name <- substr(global$name, 1, nchar(global$name)-1)
     } else {
-      global_state$viz_stack <- global_state$viz_stack
+      global$viz_stack <- global$viz_stack
     }  
   })
   
   # on-click from sigma.js
   observeEvent(input$comm_id, {
-    if (global_state$is_comm_graph){
-      data <- peek_top(global_state$viz_stack)
+    if (global$is_comm_graph){
+      data <- peek_top(global$viz_stack)
       graph <- data[[1]]
       communities <- data[[2]]
       graph <- subgraph_of_one_community(graph, communities, input$comm_id) 
       communities <- get_communities(graph)
-      global_state$viz_stack <- insert_top(global_state$viz_stack, list(graph, communities, TRUE))
+      global$viz_stack <- insert_top(global$viz_stack, list(graph, communities, TRUE))
+      global$name <- paste(global$name, input$comm_id, sep="")
     }
   })
   
   # writes out the current viz graph to a json for sigma
   graph_to_write <- reactive({
-    data <- peek_top(global_state$viz_stack)    
+    data <- peek_top(global$viz_stack)    
     graph <- data[[1]]
     communities <- data[[2]]
     
     if (vcount(graph) > 500){
       community_graph <- get_community_graph(graph, communities)
-      global_state$is_comm_graph <- TRUE
+      global$is_comm_graph <- TRUE
       return(list(community_graph, TRUE))
     } else {
       V(graph)$size <- 1
-      global_state$is_comm_graph <- FALSE
+      global$is_comm_graph <- FALSE
       if(input$interactions!= "all"){
         dellist <- c()
         indx <-1
@@ -95,31 +99,36 @@ function(input, output, session){
     } else {
       colnames(nodes) <- c("Name", "Type", "Comm", "Degree", "PageRank")
     }
-    global_state$nodes <- nodes
+    global$nodes <- nodes
   }
   
   # Plot the degree distribution of the current graph
   output$degree_distribution <- renderPlot({  
-    if (!is.null(global_state$nodes)){
-      ggplot(global_state$nodes, aes(x=Degree)) + geom_histogram(alpha=.3)
+    if (!is.null(global$nodes)){
+      ggplot(global$nodes, aes(x=Degree)) + geom_histogram(alpha=.3)
     }
   })
   
   # Plot the pagerank distribution of the current graph
   output$pagerank_distribution <- renderPlot({
-    if (!is.null(global_state$nodes)){
-      ggplot(global_state$nodes, aes(x=PageRank)) + geom_histogram(alpha=.3)
+    if (!is.null(global$nodes)){
+      ggplot(global$nodes, aes(x=PageRank)) + geom_histogram(alpha=.3)
     }    
   })
   
   # Generate a table of node degrees
   output$degree_table <- DT::renderDataTable({
-    if (!is.null(global_state$nodes)){
-      table <- global_state$nodes[c("Name", "Degree", "PageRank")]
+    if (!is.null(global$nodes)){
+      table <- global$nodes[c("Name", "Degree", "PageRank")]
     }
   },
   options = list(order = list(list(1, 'desc'))),
   rownames = FALSE
   )
+  
+  # Generate the current graph name (as a list of community labels)
+  output$name <- renderText({
+    global$name
+  })
 
 }
