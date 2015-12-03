@@ -32,7 +32,7 @@ function(input, output, session){
     size <- length(global$viz_stack)
     if (size > 1){
       global$viz_stack <- without_top(global$viz_stack)
-      global$name <- substr(global$name, 1, nchar(global$name)-1)
+      global$name <- substr(global$name, 1, nchar(global$name)-2)
     } else {
       global$viz_stack <- global$viz_stack
     }  
@@ -47,7 +47,7 @@ function(input, output, session){
       graph <- subgraph_of_one_community(graph, communities, input$comm_id) 
       communities <- get_communities(graph)
       global$viz_stack <- insert_top(global$viz_stack, list(graph, communities, TRUE))
-      global$name <- paste(global$name, input$comm_id, sep="")
+      global$name <- paste(global$name, input$comm_id, sep=":")
     }
   })
   
@@ -128,7 +128,10 @@ function(input, output, session){
   
   # Generate the current graph name (as a list of community labels)
   output$name <- renderText({
-    global$name
+    if ((nchar(global$name))==0){
+      return("")
+    }
+    return(paste("Current Community", substr(global$name, 2, nchar(global$name))))
   })
 
 }
