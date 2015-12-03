@@ -30,12 +30,13 @@ body <- dashboardBody(
   ),
   
   fluidRow(  
-    box( title = "Network",
+    box(     textOutput("name"), 
+             uiOutput("graph_with_sigma"),
+             title = "Network",
          header = TRUE,
          tags$canvas(id="graph", # graphical output area
                      width="1000",
-                     height="800"),
-         uiOutput("graph_with_sigma")
+                     height="800")
     ),
     
     tabBox( title = "Details", 
