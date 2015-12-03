@@ -14,13 +14,11 @@ s <- rstack()
 
 function(input, output, session){ 
   global_state <- reactiveValues()
-  global_state$community = NULL
   global_state$is_comm_graph = TRUE
   global_state$viz_stack <- insert_top(s, list(graph, communities, TRUE))
   
   # reset button
   observeEvent(input$reset_button, {
-    global_state$community = NULL
     graph <- build_initial_graph(initial_data)
     communities <- get_communities(graph)
     global_state$viz_stack <- rstack()
@@ -37,20 +35,13 @@ function(input, output, session){
     }  
   })
   
-  
-  # filter radio buttons
-  observeEvent(input$interactions, {
-    global_state$community = NULL
-  })
-  
   # on-click from sigma.js
   observeEvent(input$comm_id, {
     if (global_state$is_comm_graph){
-      global_state$community = input$comm_id
       data <- peek_top(global_state$viz_stack)
       graph <- data[[1]]
       communities <- data[[2]]
-      graph <- subgraph_of_one_community(graph, communities, global_state$community) 
+      graph <- subgraph_of_one_community(graph, communities, input$comm_id) 
       communities <- get_communities(graph)
       global_state$viz_stack <- insert_top(global_state$viz_stack, list(graph, communities, TRUE))
     }
