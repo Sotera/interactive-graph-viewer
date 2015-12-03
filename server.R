@@ -20,7 +20,6 @@ function(input, output, session){
   global_state$is_comm_graph = TRUE
   global_state$viz_stack <- insert_top(s, list(graph, communities, TRUE))
   
-  
   # reset button
   observeEvent(input$reset_button, {
     global_state$community = NULL
@@ -32,8 +31,6 @@ function(input, output, session){
   
   # back button
   observeEvent(input$back_button, {
-    print("Current stack size")
-    print(length(global_state$viz_stack))
     size <- length(global_state$viz_stack)
     if (size > 1){
       global_state$viz_stack <- without_top(global_state$viz_stack)
@@ -44,8 +41,6 @@ function(input, output, session){
   
   # on-click from sigma.js
   observeEvent(input$comm_id, {
-    print("Current stack size")
-    print(length(global_state$viz_stack))
     if (global_state$is_comm_graph){
       global_state$community = input$comm_id
       data <- peek_top(global_state$viz_stack)
@@ -54,17 +49,15 @@ function(input, output, session){
       graph <- subgraph_of_one_community(graph, communities, global_state$community) 
       communities <- get_communities(graph)
       global_state$viz_stack <- insert_top(global_state$viz_stack, list(graph, communities, TRUE))
-      print("Current stack size")
-      print(length(global_state$viz_stack))
     }
   })
-    
+  
   # writes out the current viz graph to a json for sigma
   graph_to_write <- reactive({
     data <- peek_top(global_state$viz_stack)    
     graph <- data[[1]]
     communities <- data[[2]]
-  
+    
     if (vcount(graph) > 500){
       community_graph <- get_community_graph(graph, communities)
       global_state$is_comm_graph <- TRUE
@@ -115,10 +108,9 @@ function(input, output, session){
   output$degree_table <- DT::renderDataTable({
     if (!is.null(global_state$nodes)){
       table <- global_state$nodes[c("Name", "Degree", "PageRank")]
-      }
-    },
-    options = list(order = list(list(1, 'desc'))),
-    rownames = FALSE
+    }
+  },
+  options = list(order = list(list(1, 'desc'))),
+  rownames = FALSE
   )
-  
 }
