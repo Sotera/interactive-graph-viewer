@@ -11,8 +11,15 @@ sidebar <- dashboardSidebar(
   p("Proteins are ",  span("green", style = "color:#77B300")),
   p("Chemicals are ", span("orange", style = "color:#FF8800")), 
   p("Diseases are ", span("red", style = "color:#CC0000")),
+
   actionButton("back_button", "Back"),
-  actionButton("reset_button", "Reset")
+  actionButton("reset_button", "Reset"),  
+  radioButtons("interactions", "Show interactions:",
+               c("All" = "all",
+                 "Protein-Protein" = "Protein-Protein",
+                 "Protein-Disease" = "Protein-Disease",
+                 "Protein-Chemical" = "Protein-Chemical",
+                 "Chemical-Disease" = "Chemical-Disease"))
 )
 
 body <- dashboardBody(

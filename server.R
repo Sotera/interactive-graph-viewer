@@ -1,5 +1,3 @@
-#server.R
-
 library(DT)
 library(shiny)
 library(igraph)
@@ -39,6 +37,12 @@ function(input, output, session){
     }  
   })
   
+  
+  # filter radio buttons
+  observeEvent(input$interactions, {
+    global_state$community = NULL
+  })
+  
   # on-click from sigma.js
   observeEvent(input$comm_id, {
     if (global_state$is_comm_graph){
@@ -65,6 +69,19 @@ function(input, output, session){
     } else {
       V(graph)$size <- 1
       global_state$is_comm_graph <- FALSE
+      if(input$interactions!= "all"){
+        dellist <- c()
+        indx <-1
+        for(nd in V(graph)){
+          atr <- get.vertex.attribute(graph,"type",nd)
+          if(grepl(atr,input$interactions) == FALSE){
+            dellist[indx] <- nd
+            indx <- indx+1
+          }
+          
+        }
+        graph <- delete.vertices(graph,dellist)
+      }
       return(list(graph, FALSE))
     }
   })
@@ -113,4 +130,5 @@ function(input, output, session){
   options = list(order = list(list(1, 'desc'))),
   rownames = FALSE
   )
+
 }
