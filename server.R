@@ -52,6 +52,21 @@ function(input, output, session){
       update_stats(community_graph, global_state$current_graph_type)
     } else {
       V(graph)$size <- 1
+      if(input$interactions!= "all"){
+        dellist <- c()
+        indx <-1
+      for(nd in V(graph)){
+        atr <- get.vertex.attribute(graph,"type",nd)
+        if(grepl(atr,input$interactions) == FALSE){
+          dellist[indx] <- nd
+          indx <- indx+1
+        }
+        
+      }
+        graph <- delete.vertices(graph,dellist)
+      }
+      
+      
       global_state$current_graph_type = "not_community"
       makenetjson(graph, "./www/data/current_graph.json", comm_graph = FALSE)
       update_stats(graph, global_state$current_graph_type)
