@@ -1,5 +1,3 @@
-#server.R
-
 library(DT)
 library(shiny)
 library(igraph)
@@ -19,6 +17,12 @@ function(input, output, session){
   
   # reset button
   observeEvent(input$reset_button, {
+    global_state$community = NULL
+  })
+  
+  
+  # filter radio buttons
+  observeEvent(input$interactions, {
     global_state$community = NULL
   })
   
@@ -55,14 +59,14 @@ function(input, output, session){
       if(input$interactions!= "all"){
         dellist <- c()
         indx <-1
-      for(nd in V(graph)){
-        atr <- get.vertex.attribute(graph,"type",nd)
-        if(grepl(atr,input$interactions) == FALSE){
-          dellist[indx] <- nd
-          indx <- indx+1
+        for(nd in V(graph)){
+          atr <- get.vertex.attribute(graph,"type",nd)
+          if(grepl(atr,input$interactions) == FALSE){
+            dellist[indx] <- nd
+            indx <- indx+1
+          }
+          
         }
-        
-      }
         graph <- delete.vertices(graph,dellist)
       }
       
@@ -106,11 +110,11 @@ function(input, output, session){
   output$degree_table <- DT::renderDataTable({
     if (!is.null(global_state$nodes)){
       table <- global_state$nodes[c("Name", "Degree", "PageRank")]
-      }
-    },
-    options = list(order = list(list(1, 'desc'))),
-    rownames = FALSE
+    }
+  },
+  options = list(order = list(list(1, 'desc'))),
+  rownames = FALSE
   )
   
-
+  
 }
