@@ -1,7 +1,7 @@
 library(DT)
 library(shiny)
+library(plotly)
 library(igraph)
-library(ggplot2)
 library(rstackdeque)
 
 source("external/graph_utils.R", local = TRUE)
@@ -103,16 +103,17 @@ function(input, output, session){
   }
   
   # Plot the degree distribution of the current graph
-  output$degree_distribution <- renderPlot({  
+  output$degree_distribution <- renderPlotly({  
     if (!is.null(global$nodes)){
-      ggplot(global$nodes, aes(x=Degree)) + geom_histogram(alpha=.3)
+      plot_ly(global$nodes, x = Degree, type="histogram",  color="#FF8800")
+      
     }
   })
   
   # Plot the pagerank distribution of the current graph
-  output$pagerank_distribution <- renderPlot({
+  output$pagerank_distribution <- renderPlotly({
     if (!is.null(global$nodes)){
-      ggplot(global$nodes, aes(x=PageRank)) + geom_histogram(alpha=.3)
+      plot_ly(global$nodes, x = PageRank, type="histogram", color="#FF8800")
     }    
   })
   
