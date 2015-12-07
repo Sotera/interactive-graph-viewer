@@ -1,7 +1,7 @@
 library(DT)
 library(shiny)
-library(plotly)
 library(igraph)
+library(ggplot2)
 library(rstackdeque)
 
 source("external/graph_utils.R", local = TRUE)
@@ -10,13 +10,15 @@ source("external/makenetjson.R", local = TRUE)
 initial_data <- "./www/data/ctd.csv"
 graph <- build_initial_graph(initial_data)
 communities <- get_communities(graph)
+htmlloaded = FALSE
 s <- rstack()
 
 function(input, output, session){ 
   global <- reactiveValues()
   global$is_comm_graph = TRUE
   global$viz_stack <- insert_top(s, list(graph, communities, TRUE))
-  global$name <- ""
+  global$name <- "" 
+  
   
   # reset button
   observeEvent(input$reset_button, {
@@ -26,6 +28,25 @@ function(input, output, session){
     global$viz_stack <- insert_top(global$viz_stack, list(graph, communities, TRUE))
     global$name <- ""
   })
+  #Search button
+  observeEvent(input$search_button,{
+    searchelm <- input$searchentitiy
+    data <- peek_top(global$viz_stack)
+    graph <- data[[1]]
+    communities <- data[[2]]
+    #print(searchelm)
+    #print(V(graph))
+    memcommunity <- communities$membership[which(searchelm== V(graph)$name)]
+    #print(V(graph))
+    #print(memcommunity)
+    observe({
+      session$sendCustomMessage(type = "commmemmsg" ,
+                                message = list(id=memcommunity))
+    })
+    
+  })
+  
+  
   
   # back button
   observeEvent(input$back_button, {
@@ -48,6 +69,7 @@ function(input, output, session){
       communities <- get_communities(graph)
       global$viz_stack <- insert_top(global$viz_stack, list(graph, communities, TRUE))
       global$name <- paste(global$name, input$comm_id, sep=":")
+      
     }
   })
   
@@ -86,8 +108,14 @@ function(input, output, session){
     data <- graph_to_write()
     makenetjson(data[[1]], "./www/data/current_graph.json", data[[2]]) 
     update_stats(data[[1]], data[[2]])
-    return(includeHTML("./www/graph.html"))
-  })
+    
+    observe({
+      print("sending update message")
+      session$sendCustomMessage(type = "updategraph",message="xyz")
+    })
+
+   return(includeHTML("./www/graph.html"))
+ })
   
   # update the summary stats
   update_stats <- function(graph, is_comm_graph){
@@ -103,17 +131,16 @@ function(input, output, session){
   }
   
   # Plot the degree distribution of the current graph
-  output$degree_distribution <- renderPlotly({  
+  output$degree_distribution <- renderPlot({  
     if (!is.null(global$nodes)){
-      plot_ly(global$nodes, x = Degree, type="histogram",  color="#FF8800")
-      
+      ggplot(global$nodes, aes(x=Degree)) + geom_histogram(alpha=.3)
     }
   })
   
   # Plot the pagerank distribution of the current graph
-  output$pagerank_distribution <- renderPlotly({
+  output$pagerank_distribution <- renderPlot({
     if (!is.null(global$nodes)){
-      plot_ly(global$nodes, x = PageRank, type="histogram", color="#FF8800")
+      ggplot(global$nodes, aes(x=PageRank)) + geom_histogram(alpha=.3)
     }    
   })
   
@@ -134,5 +161,6 @@ function(input, output, session){
     }
     return(paste("Current Community", substr(global$name, 2, nchar(global$name))))
   })
-
+  
+}
 }
