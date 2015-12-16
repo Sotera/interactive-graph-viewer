@@ -1,7 +1,7 @@
 library(DT)
 library(shiny)
 library(igraph)
-library(ggplot2)
+library(plotly)
 library(rstackdeque)
 
 source("external/graph_utils.R", local = TRUE)
@@ -28,6 +28,8 @@ function(input, output, session){
     global$viz_stack <- insert_top(global$viz_stack, list(graph, communities, TRUE))
     global$name <- ""
   })
+  
+  
   #Search button
   observeEvent(input$search_button,{
     searchelm <- input$searchentitiy
@@ -43,9 +45,7 @@ function(input, output, session){
       session$sendCustomMessage(type = "commmemmsg" ,
                                 message = list(id=memcommunity))
     })
-    
   })
-  
   
   
   # back button
@@ -113,9 +113,9 @@ function(input, output, session){
       print("sending update message")
       session$sendCustomMessage(type = "updategraph",message="xyz")
     })
-
-   return(includeHTML("./www/graph.html"))
- })
+    
+    return(includeHTML("./www/graph.html"))
+  })
   
   # update the summary stats
   update_stats <- function(graph, is_comm_graph){
@@ -131,16 +131,16 @@ function(input, output, session){
   }
   
   # Plot the degree distribution of the current graph
-  output$degree_distribution <- renderPlot({  
+  output$degree_distribution <- renderPlotly({  
     if (!is.null(global$nodes)){
-      ggplot(global$nodes, aes(x=Degree)) + geom_histogram(alpha=.3)
+      plot_ly(global$nodes, x = Degree, type="histogram",  color="#FF8800")
     }
   })
   
   # Plot the pagerank distribution of the current graph
-  output$pagerank_distribution <- renderPlot({
+  output$pagerank_distribution <- renderPlotly({
     if (!is.null(global$nodes)){
-      ggplot(global$nodes, aes(x=PageRank)) + geom_histogram(alpha=.3)
+      plot_ly(global$nodes, x = PageRank, type="histogram", color="#FF8800")
     }    
   })
   
@@ -162,5 +162,4 @@ function(input, output, session){
     return(paste("Current Community", substr(global$name, 2, nchar(global$name))))
   })
   
-}
 }
