@@ -81,11 +81,8 @@ function(input, output, session){
     
     # Try and apply community detection if there are a lot of nodes to visualize
     if (vcount(graph) > 500){
-      print("Got here")
       community_graph <- get_community_graph(graph, communities)
-      print("1")
       if (vcount(community_graph) > 1){ 
-        print("2")
         global$is_comm_graph <- TRUE
         return(list(community_graph, TRUE))
       }
