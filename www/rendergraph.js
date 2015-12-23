@@ -100,7 +100,7 @@
                   new_s.killForceAtlas2();
               }
 
-              window.setTimeout(stop, 8000);
+              window.setTimeout(stop, 2000);
               new_s.refresh();
             
 
