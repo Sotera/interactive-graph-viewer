@@ -79,28 +79,35 @@ function(input, output, session){
     graph <- data[[1]]
     communities <- data[[2]]
     
+    # Try and apply community detection if there are a lot of nodes to visualize
     if (vcount(graph) > 500){
+      print("Got here")
       community_graph <- get_community_graph(graph, communities)
-      global$is_comm_graph <- TRUE
-      return(list(community_graph, TRUE))
-    } else {
-      V(graph)$size <- 1
-      global$is_comm_graph <- FALSE
-      if(input$interactions!= "all"){
-        dellist <- c()
-        indx <-1
-        for(nd in V(graph)){
-          atr <- get.vertex.attribute(graph,"type",nd)
-          if(grepl(atr,input$interactions) == FALSE){
-            dellist[indx] <- nd
-            indx <- indx+1
-          }
-          
-        }
-        graph <- delete.vertices(graph,dellist)
+      print("1")
+      if (vcount(community_graph) > 1){ 
+        print("2")
+        global$is_comm_graph <- TRUE
+        return(list(community_graph, TRUE))
       }
-      return(list(graph, FALSE))
+    } 
+    
+    # If we have few enough nodes (or would have just 1 (sub)community) visualize as is
+    V(graph)$size <- 1
+    global$is_comm_graph <- FALSE
+    if(input$interactions!= "all"){
+      dellist <- c()
+      indx <-1
+      for(nd in V(graph)){
+        atr <- get.vertex.attribute(graph,"type",nd)
+        if(grepl(atr,input$interactions) == FALSE){
+          dellist[indx] <- nd
+          indx <- indx+1
+        }
+        
+      }
+      graph <- delete.vertices(graph,dellist)
     }
+    return(list(graph, FALSE))
   })
   
   # render with sigma the current graph (in json)
@@ -110,7 +117,6 @@ function(input, output, session){
     update_stats(data[[1]], data[[2]])
     
     observe({
-      print("sending update message")
       session$sendCustomMessage(type = "updategraph",message="xyz")
     })
     
