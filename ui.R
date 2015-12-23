@@ -56,4 +56,4 @@ body <- dashboardBody(
   
 )
 
-dashboardPage(header, sidebar, body)
+dashboardPage(header, sidebar, body, skin = "blue")

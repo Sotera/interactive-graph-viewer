@@ -15,13 +15,7 @@
 			    JSON.parse(JSON.stringify(message),function(k,v){if(k=="id"){
 						s.graph.nodes().forEach(function(node, i, a) {
 							if(node.id==v){
-			                    node.color = "#FF0000";
-			                    node.originalColor = "#FF0000";
-							}
-							else
-							{
-		                        node.color = "#2A9FD6";
-		                        node.originalColor = "#2A9FD6";
+			                    node.color = "#b870db";
 							}
 						});
 		s.refresh();
@@ -59,22 +53,18 @@
                   switch (node.type) {
                       case "Chemical":
                           node.color = "#FF8800";
-                          node.originalColor = "#FF8800";
                           break;
 
                       case "Disease":
                           node.color = "#CC0000";
-                          node.originalColor = "#CC0000";;
                           break;
 
                       case "Protein":
                           node.color = "#77B300";
-                          node.originalColor = "#77B300";
                           break;
 
                       case "Community":
                           node.color = "#2A9FD6";
-                          node.originalColor = "#2A9FD6";
                           break;
 
                       default:

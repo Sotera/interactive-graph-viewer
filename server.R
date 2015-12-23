@@ -17,7 +17,7 @@ s2 <-rstack()
 function(input, output, session){ 
   global <- reactiveValues()
   global$is_comm_graph = TRUE
-  global$viz_stack <- insert_top(s1, list(graph, communities, TRUE))
+  global$viz_stack <- insert_top(s1, list(graph, communities))
   global$name <- insert_top(s2, "")
   
   
@@ -26,7 +26,7 @@ function(input, output, session){
     graph <- build_initial_graph(initial_data)
     communities <- get_communities(graph)
     global$viz_stack <- rstack()
-    global$viz_stack <- insert_top(global$viz_stack, list(graph, communities, TRUE))
+    global$viz_stack <- insert_top(global$viz_stack, list(graph, communities))
     global$name <- insert_top(s2, "")
   })
   
@@ -37,11 +37,12 @@ function(input, output, session){
     data <- peek_top(global$viz_stack)
     graph <- data[[1]]
     communities <- data[[2]]
-    #print(searchelm)
-    #print(V(graph))
-    memcommunity <- communities$membership[which(searchelm== V(graph)$name)]
-    #print(V(graph))
-    #print(memcommunity)
+    if (global$is_comm_graph){
+      memcommunity <- communities$membership[which(searchelm== V(graph)$name)]
+    } else {
+      memcommunity <- searchelm
+      print(memcommunity)
+    }
     observe({
       session$sendCustomMessage(type = "commmemmsg" ,
                                 message = list(id=memcommunity))
@@ -66,7 +67,7 @@ function(input, output, session){
       communities <- data[[2]]
       graph <- subgraph_of_one_community(graph, communities, input$comm_id) 
       communities <- get_communities(graph)
-      global$viz_stack <- insert_top(global$viz_stack, list(graph, communities, TRUE))
+      global$viz_stack <- insert_top(global$viz_stack, list(graph, communities))
       global$name <- insert_top(global$name, input$comm_id)      
     }
   })
@@ -159,10 +160,7 @@ function(input, output, session){
   output$name <- renderText({
     name <- as.list(rev(global$name))
     name <- paste(name, collapse = "/", sep="/")
-    print(name)
     return(paste(c("Current Community", name)))
-    
-    #return(paste("Current Community", substr(global$name, 2, nchar(global$name))))
   })
   
 }
