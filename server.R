@@ -11,13 +11,14 @@ initial_data <- "./www/data/ctd.csv"
 graph <- build_initial_graph(initial_data)
 communities <- get_communities(graph)
 htmlloaded = FALSE
-s <- rstack()
+s1 <- rstack()
+s2 <-rstack()
 
 function(input, output, session){ 
   global <- reactiveValues()
   global$is_comm_graph = TRUE
-  global$viz_stack <- insert_top(s, list(graph, communities, TRUE))
-  global$name <- "" 
+  global$viz_stack <- insert_top(s1, list(graph, communities, TRUE))
+  global$name <- insert_top(s2, "")
   
   
   # reset button
@@ -26,7 +27,7 @@ function(input, output, session){
     communities <- get_communities(graph)
     global$viz_stack <- rstack()
     global$viz_stack <- insert_top(global$viz_stack, list(graph, communities, TRUE))
-    global$name <- ""
+    global$name <- insert_top(s2, "")
   })
   
   
@@ -53,10 +54,8 @@ function(input, output, session){
     size <- length(global$viz_stack)
     if (size > 1){
       global$viz_stack <- without_top(global$viz_stack)
-      global$name <- substr(global$name, 1, nchar(global$name)-2)
-    } else {
-      global$viz_stack <- global$viz_stack
-    }  
+      global$name <- without_top(global$name)
+    } 
   })
   
   # on-click from sigma.js
@@ -68,8 +67,7 @@ function(input, output, session){
       graph <- subgraph_of_one_community(graph, communities, input$comm_id) 
       communities <- get_communities(graph)
       global$viz_stack <- insert_top(global$viz_stack, list(graph, communities, TRUE))
-      global$name <- paste(global$name, input$comm_id, sep=":")
-      
+      global$name <- insert_top(global$name, input$comm_id)      
     }
   })
   
@@ -159,10 +157,12 @@ function(input, output, session){
   
   # Generate the current graph name (as a list of community labels)
   output$name <- renderText({
-    if ((nchar(global$name))==0){
-      return("")
-    }
-    return(paste("Current Community", substr(global$name, 2, nchar(global$name))))
+    name <- as.list(rev(global$name))
+    name <- paste(name, collapse = "/", sep="/")
+    print(name)
+    return(paste(c("Current Community", name)))
+    
+    #return(paste("Current Community", substr(global$name, 2, nchar(global$name))))
   })
   
 }
