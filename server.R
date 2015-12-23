@@ -49,6 +49,16 @@ function(input, output, session){
     })
   })
   
+  # table click
+  observe({
+    row <- input$degree_table_rows_selected
+    if (length(row)){
+      print(row)
+      session$sendCustomMessage(type = "commmemmsg" ,
+                                message = list(id=tail(row, n=1)))
+    }
+  })
+  
   
   # back button
   observeEvent(input$back_button, {
@@ -153,7 +163,8 @@ function(input, output, session){
     }
   },
   options = list(order = list(list(1, 'desc'))),
-  rownames = FALSE
+  rownames = FALSE,
+  selection = "single"
   )
   
   # Generate the current graph name (as a list of community labels)
