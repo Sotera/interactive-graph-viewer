@@ -15,12 +15,10 @@ sidebar <- dashboardSidebar(
   
   actionButton("back_button", "Back"),
   actionButton("reset_button", "Reset"),  
-  radioButtons("interactions", "Show interactions:",
-               c("All" = "all",
-                 "Protein-Protein" = "Protein-Protein",
-                 "Protein-Disease" = "Protein-Disease",
-                 "Protein-Chemical" = "Protein-Chemical",
-                 "Chemical-Disease" = "Chemical-Disease")),
+  
+  checkboxGroupInput("node_types", "Entities:",
+                     choices = c("Protein" , "Disease", "Chemical"),
+                     selected = c("Protein" , "Disease", "Chemical")),
   
   textInput("searchentitiy","Search Protein"),
   actionButton("search_button","Search")
