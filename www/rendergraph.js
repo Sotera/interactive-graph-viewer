@@ -17,7 +17,7 @@
                             if (k == "id") {
                                 s.graph.nodes().forEach(function(node, i, a) {
                                     if (node.id == v) {
-                                        node.color = "#b870db";
+                                        node.color = "#FFD700";
                                     } else {
                                         switch (node.type) {
                                             case "Chemical":
