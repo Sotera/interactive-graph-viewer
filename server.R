@@ -30,6 +30,9 @@ function(input, output, session){
     global$name <- insert_top(s2, "")
   })
   
+  observeEvent(input$variable, {
+    print(input$variable)
+  })
   
   #Search button
   observeEvent(input$search_button,{
@@ -100,19 +103,19 @@ function(input, output, session){
     # If we have few enough nodes (or would have just 1 (sub)community) visualize as is
     V(graph)$size <- 1
     global$is_comm_graph <- FALSE
-    if(input$interactions!= "all"){
-      dellist <- c()
-      indx <-1
-      for(nd in V(graph)){
-        atr <- get.vertex.attribute(graph,"type",nd)
-        if(grepl(atr,input$interactions) == FALSE){
-          dellist[indx] <- nd
-          indx <- indx+1
-        }
-        
+
+    # Remove nodes we aren't we don't want that type of node    
+    dellist <- c()
+    indx <- 1
+    for (nd in V(graph)){
+      atr <- get.vertex.attribute(graph, "type", nd)
+      if (!(atr %in% input$node_types)){
+        dellist[indx] <- nd
+        indx <- indx+1
       }
-      graph <- delete.vertices(graph,dellist)
     }
+    graph <- delete.vertices(graph,dellist)
+    
     return(list(graph, FALSE))
   })
   
