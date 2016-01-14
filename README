@@ -7,10 +7,13 @@ Baylor's protein-protein interaction data.
 To run:
 
 1. Download and install R Studio
-2. Install the Shiny package by running the command
-
-    install.packages("Shiny")
-
-    at the R command line
+2. Install the necessarypackages by running the commands
+    install.packages("shiny")
+    install.packages("shinydashboard")
+    install.packages("DT")
+    install.packages("jsonlite")
+    install.packages("igraph")
+    install.packages("ggplot2")
+    install.packages("rstackdeque")
 
 3. Open all of the .R files in this repo and click "run app" in R studio
