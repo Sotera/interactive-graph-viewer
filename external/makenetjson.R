@@ -26,8 +26,12 @@ makenetjson<-function(gcomm, filename, comm_graph){
   
   edgedf=get.data.frame(gcomm, what="edges");
   edgeids=vector("character", ecount(gcomm))
-  for(i in 1:ecount(gcomm)){edgeids[i]=paste0("e", as.character(i))}
-  edgedf2=data.frame(source=as.character(edgedf$from), target=as.character(edgedf$to), id=edgeids)
+  if (ecount(gcomm)>0){
+    for(i in 1:ecount(gcomm)){edgeids[i]=paste0("e", as.character(i))}
+    edgedf2=data.frame(source=as.character(edgedf$from), target=as.character(edgedf$to), id=edgeids)
+  } else {
+    edgedf2=data.frame(source=character(), target=character())
+  }
   edges_json=paste0("\"edges\":", jsonlite::toJSON(edgedf2))
   nodes_json=paste0("\"nodes\":", jsonlite::toJSON(nodedf))
   all_json=paste0("{", nodes_json, ",", edges_json, "}")
