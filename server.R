@@ -8,9 +8,9 @@ options(shiny.maxRequestSize = 100*1024^2) #100MB file size limit
 source("external/graph_utils.R", local = TRUE)
 source("external/makenetjson.R", local = TRUE)
 source("external/protein_label_dictionary.R",local = TRUE)
+
+
 conf <- fromJSON("./www/data/config.json")
-#mp <- getproteinlabeldict()
-#head(initial_data)
 graph <- build_initial_graph(conf)
 communities <- get_communities(graph)
 htmlloaded = FALSE
@@ -57,46 +57,30 @@ function(input, output, session){
     dat <- read.csv(inFile$datapath, header = input$header,
                     sep = input$sep, quote = input$quote)
     print(input$type1)
-    #x<-unique(rbind(dat[,input$type1],dat[,input$type2]))
     x<-paste(dat[,"type1"],dat[,"type2"],collapse = ",",sep=",")
     uniqueentities<<-unique(unlist(strsplit(x,",")))
-    #x<-unique(append(toString(unlist(unique((dat[,input$type1])))),toString(unlist(unique((dat[,input$type2]))))))
     updateSelectInput(session,"entcolors",choices = uniqueentities)
     updateSelectInput(session,"entintr1",choices=uniqueentities)
     updateSelectInput(session,"entintr2",choices=uniqueentities)
-    
   })
   
   
-  
-  
   #set entity color button
-  
   observeEvent(input$entdone,{
     print(uniqueentities)
-    #print(input[["entcolors"]])
-    #print(input[["entcol"]])
-    
     colormapping <<- rbind(colormapping,data.frame(Entity=toString(input[["entcolors"]]),Color=toString(input[["entcol"]])))
     output$enttable <- renderTable(colormapping)
   })
   
   
   #set entity interacton button
-  
   observeEvent(input$entintrdone,{
-    
-    #print(input[["entintr1"]])
-    #print(input[["entintr2"]])
-    
-
     if(nrow(interactionmapping) >0){
-      
       comb1 <- sum(grepl(input[["entintr1"]],interactionmapping$Entity1))
       comb2 <- sum(grepl(input[["entintr2"]],interactionmapping$Entity2))
       comb3 <-sum(grepl(input[["entintr1"]],interactionmapping$Entity2))
       comb4<-sum(grepl(input[["entintr2"]],interactionmapping$Entity1))
-    
+      
       if((comb1>0)&&(comb2>0))
         return(NULL)
       if((comb3>0)&&(comb4>0))
@@ -108,7 +92,6 @@ function(input, output, session){
   
   
   #saveoptionscsv event
-  
   observeEvent(input$saveoptionscsv,{
     fpath<-input$file1$datapath
     
@@ -134,28 +117,23 @@ function(input, output, session){
   }]', fpath, input$entity1,input$entity2, input$type1,input$type2, typecolors,interactions, input$community_col,input$comm_size)
     
     print(elements_list)
-    #conf1<-fromJSON(elements_list)
-    
     con <- file("./www/data/config_1.json")
     writeLines(elements_list,con)
     close(con)
     conf <<- fromJSON("./www/data/config_1.json")
     resetgraph(conf)
     
-})
+  })
   
   
   # reset button
   observeEvent(input$reset_button, {
-    
     resetgraph(conf)
-    
   })
   
   resetgraph<-function(conf)
   {
     graph <- build_initial_graph(conf)
-    #print(input$select)
     communities <- get_communities(graph,input$select)
     global$viz_stack <- rstack()
     global$viz_stack <- insert_top(global$viz_stack, list(graph, communities))
@@ -163,36 +141,32 @@ function(input, output, session){
     
     x<-as.data.frame(conf$Interactions)
     
-      z<-c()
-      itr<-1
-      for(ii in x$Entity1){
-        pastestr=paste0(ii,"-",x$Entity2[itr],sep="")
-        z[itr] <- c(pastestr=pastestr)
-        itr<-itr+1
-      }
-      z[itr] <- paste0("all"="All")
-    #chcs <- paste(z,collapse = ",")
-      updateRadioButtons(session,"interactions",label="Show Interactions:",choices=z,selected="All")
+    z<-c()
+    itr<-1
+    for(ii in x$Entity1){
+      pastestr=paste0(ii,"-",x$Entity2[itr],sep="")
+      z[itr] <- c(pastestr=pastestr)
+      itr<-itr+1
+    }
+    z[itr] <- paste0("all"="All")
+    updateRadioButtons(session,"interactions",label="Show Interactions:",choices=z,selected="All")
+    
+    print(input$community_col)
+    output$legend<- renderUI({
       
-      print(input$community_col)
-      output$legend<- renderUI({
-        
-        cm<-p("Communities are ", span(input$community_col, style = paste("color:",input$community_col,sep="")))
-        z<-apply(colormapping,1, processrow)
-        return(append(z,cm))
-      })
-      
-      
-      
+      cm<-p("Communities are ", span(input$community_col, style = paste("color:",input$community_col,sep="")))
+      z<-apply(colormapping,1, processrow)
+      return(append(z,cm))
+    })
+    
+    
+    
   }
   
   processrow<-function (elm)
   {
-    #print(elm[1])
-    #print(elm[2])
     p(paste(toString(elm[1]), "'s are ",sep=""), span(toString(elm[2]), style = paste("color:",toString(elm[2]),sep="")))
-  
-    }
+  }
   
   observeEvent(input$variable, {
     #print(input$variable)
@@ -201,7 +175,6 @@ function(input, output, session){
   #Search button
   observeEvent(input$search_button,{
     searchelm <- strsplit(input$searchentitiy,",")
-    #print(searchelm)
     data <- peek_top(global$viz_stack)
     graph <- data[[1]]
     communities <- data[[2]]
@@ -237,10 +210,10 @@ function(input, output, session){
     last_selected_row = tail(row, n=1)
     
     
-      #proteins<-protienDSpathway[protienDSpathway$Pathway==unlist(last_selected_row),]$Protein
-      #print(proteins)
-      session$sendCustomMessage(type = "commmemmsg" ,
-                                message = list(id=paste(rownames(z),collapse=",")))
+    #proteins<-protienDSpathway[protienDSpathway$Pathway==unlist(last_selected_row),]$Protein
+    #print(proteins)
+    session$sendCustomMessage(type = "commmemmsg" ,
+                              message = list(id=paste(rownames(z),collapse=",")))
     
   })
   
@@ -312,8 +285,6 @@ function(input, output, session){
     communities <- data[[2]]
     print(is_comm_graph)
     # Try and apply community detection if there are a lot of nodes to visualize
-    #print(vcount(graph))
-    #print(conf$community_threshold)
     if (vcount(graph) >  as.numeric(conf$community_threshold)){
       community_graph <- get_community_graph(graph, communities)
       if (vcount(community_graph) > 1){ 
@@ -463,4 +434,4 @@ function(input, output, session){
     plot_ly(z = sortedlabel,x=colnames(sortedlabel),y=rownames(sortedlabel), type = "heatmap",hoverinfo = "text",
             text = paste(colnames(sortedlabel),rownames(sortedlabel)),colorscale = "Hot") %>% layout(xaxis = list(title="Proteins"),yaxis=list(title="Disease Pathway"))
   })
-  }
+}
