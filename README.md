@@ -1,3 +1,5 @@
+# Interactive Graph Viewer
+
 This is an R Shiny app for interactively viewing the results of the Louvain
 method for community detection.
 
