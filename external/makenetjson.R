@@ -1,6 +1,6 @@
 library(jsonlite)
 
-makenetjson<-function(gcomm, filename, comm_graph){
+makenetjson<-function(gcomm, filename, comm_graph,conf){
   gcomm=simplify(gcomm, edge.attr.comb=list("sum"), remove.loops=FALSE)
   
   # We need the following attributes for sigma
@@ -10,18 +10,22 @@ makenetjson<-function(gcomm, filename, comm_graph){
   #  - x 
   #  - y
   # - type (I'll base the color of the node off of type in the javascript)
-  
+
   gcommlayout=layout_with_kk(gcomm, kkconst = vcount(gcomm)/2);
   V(gcomm)$x=gcommlayout[,1]
   V(gcomm)$y=gcommlayout[,2]
-  
+ 
   nodedf=get.data.frame(gcomm, what="vertices")
   nodedf$id = nodedf$name
   if (comm_graph){
     nodedf$label = as.character(nodedf$comm)
+    nodedf$comm_id= as.character(nodedf$comm)
     nodedf$type = rep("Community", times = vcount(gcomm))
+    nodedf$color =  rep(conf$community_color, times = vcount(gcomm))
+    nodedf$originalcolor<-nodedf$color
   } else {
     nodedf$label= nodedf$name
+    nodedf$originalcolor<-nodedf$color
   }
   
   edgedf=get.data.frame(gcomm, what="edges");

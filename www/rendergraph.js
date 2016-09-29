@@ -1,4 +1,5 @@
 (function() {
+	var searchelm = "";
     sigma.parsers.json("data/current_graph.json",
 
         {
@@ -8,38 +9,27 @@
 
         function(s) { //This function is passed an instance of Sigma s
             var g = document.querySelector('#graph2');
-
+			
             try {
                 Shiny.addCustomMessageHandler("commmemmsg",
                     function(message) {
-
+						
                         JSON.parse(JSON.stringify(message), function(k, v) {
                             if (k == "id") {
+								
+								elems = String(v).split(",");
+								
                                 s.graph.nodes().forEach(function(node, i, a) {
-                                    if (node.id == v) {
+									
+									node.color = node.originalcolor;
+									for (var ix = 0; ix < elems.length; ix++) {
+										elem = elems[ix];
+                                    if (node.id == elem) {
                                         node.color = "#FFD700";
-                                    } else {
-                                        switch (node.type) {
-                                            case "Chemical":
-                                                node.color = "#FF8800";
-                                                break;
-
-                                            case "Disease":
-                                                node.color = "#CC0000";
-                                                break;
-
-                                            case "Protein":
-                                                node.color = "#77B300";
-                                                break;
-
-                                            case "Community":
-                                                node.color = "#2A9FD6";
-                                                break;
-
-                                            default:
-                                                break;
-                                        }
                                     }
+									
+								}
+								searchelm=elems;
                                 });
                                 s.refresh();
                             }
@@ -47,6 +37,7 @@
                     }
                 );
             } catch (err) {
+				
 
             }
 
@@ -70,29 +61,20 @@
                             container: 'graph2'
                         },
                         function(new_s) {
-                            //s.graph.kill();
                             new_s.graph.nodes().forEach(function(node, i, a) {
-
-                                switch (node.type) {
-                                    case "Chemical":
-                                        node.color = "#FF8800";
-                                        break;
-
-                                    case "Disease":
-                                        node.color = "#CC0000";
-                                        break;
-
-                                    case "Protein":
-                                        node.color = "#77B300";
-                                        break;
-
-                                    case "Community":
-                                        node.color = "#2A9FD6";
-                                        break;
-
-                                    default:
-                                        break;
+								
+								if(searchelm!=""){
+								for (var ix = 0; ix < searchelm.length; ix++) {
+									elem = searchelm[ix];
+									if (node.id == elem){ 
+                                    	node.color = "#FFD700";
+									}
+									else
+									{
+										node.color = node.originalcolor;
+									} 
                                 }
+							}
                             });
 
                             //Call refresh to render the new graph
@@ -120,7 +102,7 @@
                             // action if we click on a node
                             new_s.bind('clickNode', function(e) {
                                 window.console.log(e.type, e.data.node.label, e.data.captor);
-                                Shiny.onInputChange("comm_id", e.data.node.label);
+                                Shiny.onInputChange("comm_id", e.data.node.comm_id);
                             });
                             s = new_s;
                         });
