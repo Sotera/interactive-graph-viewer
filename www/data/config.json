@@ -1,0 +1,13 @@
+[
+{
+"FilePath":"./www/data/ctd.csv",
+"Entity1_Col" :"entity1",
+"Entity2_Col":"entity2",
+"Type1_Col":"type1",
+"Type2_Col":"type2",
+"Type_colors":[{"Entity":"Protein","Color":"#77B300"},{"Entity":"Chemical","Color":"#FF8800"},{ "Entity":"Disease","Color":"#CC0000"}],
+"community_color":"#2ADDDD",
+"community_threshold":"400"
+
+}
+]
