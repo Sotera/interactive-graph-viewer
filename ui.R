@@ -76,14 +76,6 @@ body <- dashboardBody(
                       
                       ,value=1),
              tabPanel('Viewer',
-                      tags$head(
-                        tags$script(src='lib/sigma.min.js'),
-                        tags$script(src='lib/sigma.layout.forceAtlas2.min.js'),
-                        tags$script(src='lib/sigma.parsers.json.min.js'),
-                        tags$script(src='rendergraph.js'),
-                        tags$link(rel = "stylesheet", type = "text/css", href = "graph.css")
-                      ),
-                      
                       fluidRow(  
                         box(     textOutput("name"), 
                                  uiOutput("graph_with_sigma"),
@@ -117,7 +109,12 @@ body <- dashboardBody(
                       ,value=2)
            )
     ) 
-  )
+  ),
+  tags$script(src='lib/sigma.min.js'),
+  tags$script(src='lib/sigma.layout.forceAtlas2.min.js'),
+  tags$script(src='lib/sigma.parsers.json.min.js'),
+  tags$script(src='rendergraph.js'),
+  tags$link(rel = "stylesheet", type = "text/css", href = "graph.css")
 )
 
 
