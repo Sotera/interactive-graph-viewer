@@ -322,6 +322,12 @@ function(input, output, session){
   # render with sigma the current graph (in json)
   output$graph_with_sigma <- renderUI({
     data <- graph_to_write()
+    #print(length(data[[1]]))
+#    print('data[[1]]')
+#    print(data[[1]])
+#    print('data[[2]]')
+#    print(data[[2]])
+    #print(length(data[[2]]))
     print("printing conf")
     print(conf)
     makenetjson(data[[1]], "./www/data/current_graph.json", data[[2]],conf) 
@@ -350,14 +356,14 @@ function(input, output, session){
   # Plot the degree distribution of the current graph
   output$degree_distribution <- renderPlotly({  
     if (!is.null(global$nodes)){
-      plot_ly(global$nodes, x = Degree, type="histogram",  color="#FF8800")
+      plot_ly(x = global$nodes[["Degree"]], type="histogram",  color="#FF8800")
     }
   })
   
   # Plot the pagerank distribution of the current graph
   output$pagerank_distribution <- renderPlotly({
-    if (!is.null(global$nodes)){
-      plot_ly(global$nodes, x = PageRank, type="histogram", color="#FF8800")
+    if (!is.null(global$nodes)) {
+      plot_ly(x = global$nodes[["PageRank"]], type="histogram",  color="#FF8800")
     }    
   })
   
