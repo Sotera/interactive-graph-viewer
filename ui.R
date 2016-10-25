@@ -31,11 +31,11 @@ body <- dashboardBody(
               header = TRUE,
               tags$canvas(
                 id="graph", # graphical output area
-                width="1000",
-                height="800"
+                width="700",
+                height="700"
               ),
               tags$div(id="graph2"),
-              tags$style(type="text/css", "#graph2 {max-width: 1000px; height: 800px; margin: auto;}")
+              tags$style(type="text/css", "#graph2 {max-width: 700px; max-height: 700px; margin: auto;}")
             ),
             column(5,
               wellPanel(
@@ -55,7 +55,7 @@ body <- dashboardBody(
                 # actionButton("back_button", "Back"),
                 # actionButton("reset_button", "Reset"),
                 #hr(),
-                radioButtons("interactions","Show Interactions:",choices=c(0)),
+                # radioButtons("interactions","Show Interactions:",choices=c(0)),
                 textInput("searchentitiy","Search Entity"),
                 actionButton("search_button","Search")
               ),
