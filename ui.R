@@ -38,7 +38,7 @@ body <- dashboardBody(
               tags$style(type="text/css", "#graph2 {max-width: 700px; max-height: 700px; margin: auto;}")
             ),
             column(5,
-              wellPanel(
+              box(width = NULL,
                 selectInput("select",
                             label = "Select algorithm",
                             choices = list(
@@ -59,26 +59,28 @@ body <- dashboardBody(
                 textInput("searchentitiy","Search Entity"),
                 actionButton("search_button","Search")
               ),
-              tabsetPanel(
-                id = "details",
-                selected = "Entities",
-                tabPanel("Entities", DT::dataTableOutput("degree_table")),
-                tabPanel("Degrees", plotlyOutput("degree_distribution")),
-                tabPanel("PageRanks", plotlyOutput("pagerank_distribution")),
-                tabPanel("Disease Pathway", 
-                  tabBox(
-                    width=500,title="",
-                    id="pathinfo",
-                    tabPanel(
-                      "Data",
-                      fluidRow(
-                        splitLayout(
-                          cellWidths = c("100%", "0%"),
-                          DT::dataTableOutput("plotgraph1")
+              box(width = NULL,
+                tabsetPanel(
+                  id = "details",
+                  selected = "Entities",
+                  tabPanel("Entities", DT::dataTableOutput("degree_table")),
+                  tabPanel("Degrees", plotlyOutput("degree_distribution")),
+                  tabPanel("PageRanks", plotlyOutput("pagerank_distribution")),
+                  tabPanel("Disease Pathway", 
+                    tabBox(
+                      width=500,title="",
+                      id="pathinfo",
+                      tabPanel(
+                        "Data",
+                        fluidRow(
+                          splitLayout(
+                            cellWidths = c("100%", "0%"),
+                            DT::dataTableOutput("plotgraph1")
+                          )
                         )
                       )
+                      #,tabPanel("Heatmap",plotlyOutput("plotgraph2"))
                     )
-                    #,tabPanel("Heatmap",plotlyOutput("plotgraph2"))
                   )
                 )
               )
