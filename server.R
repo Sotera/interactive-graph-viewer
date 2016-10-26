@@ -301,17 +301,17 @@ function(input, output, session){
     dellist <- c()
     indx <- 1
     
-    if(input$interactions == "All")
-      return(list(graph, FALSE))
+    # if(input$interactions == "All")
+    #   return(list(graph, FALSE))
     
     for(nd in V(graph)){
       
       atr <- get.vertex.attribute(graph,"type",nd)
       print(atr)
-      if(grepl(atr,input$interactions) == FALSE){
-        dellist[indx] <- nd
-        indx <- indx+1
-      }
+      # if(grepl(atr,input$interactions) == FALSE){
+      #   dellist[indx] <- nd
+      #   indx <- indx+1
+      # }
       
     }
     graph <- delete.vertices(graph,dellist)
@@ -357,7 +357,7 @@ function(input, output, session){
   output$degree_distribution <- renderPlotly({  
     if (!is.null(global$nodes)){
       x <-list(
-        title = "PageRank"
+        title = "Degree"
       )
       y <- list(
         title = "Number of nodes"
@@ -371,7 +371,7 @@ function(input, output, session){
   output$pagerank_distribution <- renderPlotly({
     if (!is.null(global$nodes)) {
       x <-list(
-        title = "Degree"
+        title = "PageRank"
       )
       y <- list(
         title = "Number of nodes"
