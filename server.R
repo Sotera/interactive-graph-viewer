@@ -356,14 +356,28 @@ function(input, output, session){
   # Plot the degree distribution of the current graph
   output$degree_distribution <- renderPlotly({  
     if (!is.null(global$nodes)){
-      plot_ly(x = global$nodes[["Degree"]], type="histogram",  color="#FF8800")
+      x <-list(
+        title = "PageRank"
+      )
+      y <- list(
+        title = "Number of nodes"
+      )
+      plot_ly(x = global$nodes[["Degree"]], type="histogram",  color="#FF8800") %>%
+        layout(xaxis = x, yaxis = y)
     }
   })
   
   # Plot the pagerank distribution of the current graph
   output$pagerank_distribution <- renderPlotly({
     if (!is.null(global$nodes)) {
-      plot_ly(x = global$nodes[["PageRank"]], type="histogram",  color="#FF8800")
+      x <-list(
+        title = "Degree"
+      )
+      y <- list(
+        title = "Number of nodes"
+      )
+      plot_ly(x = global$nodes[["PageRank"]], type="histogram",  color="#FF8800") %>%
+        layout(xaxis = x, yaxis = y)
     }    
   })
   
