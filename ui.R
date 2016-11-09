@@ -6,58 +6,33 @@ library(colourpicker)
 
 header <- dashboardHeader(
   title = "Community Visualization v2.0",
-  titleWidth = 450
+  titleWidth = 300
 )
 
-
 body <- dashboardBody(
+  
+  tags$head(tags$style(HTML('
+    .skin-blue .main-header .logo {
+      background-color: #3c8dbc;
+    }
+    .skin-blue .main-header .logo:hover {
+      background-color: #3c8dbc;
+    }
+  '))),
+  
   fluidRow(
     column(width=12,
-      tabBox(
+      tabsetPanel(
         id='tabvals',
-        width=NULL,
         tabPanel(
           'Viewer',
           fluidRow (
-
-            column(7,
-              #textOutput("name"),
-              actionButton("reset_button", "Reset"),
-              tags$style(type="text/css", "#reset_button {float: right; margin-left: 5px;}"),
-              actionButton("back_button", "Back"),
-              tags$style(type="text/css", "#back_button {float: right; margin-left: 5px;}"),
-              uiOutput("graph_with_sigma"),
-              #title = "Network",
-              header = TRUE,
-              tags$canvas(
-                id="graph", # graphical output area
-                width="700",
-                height="700"
-              ),
-              tags$div(id="graph2"),
-              tags$style(type="text/css", "#graph2 {max-width: 700px; max-height: 700px; margin: auto;}")
-            ),
-            column(5,
+            column(9,
               box(width = NULL,
-                selectInput("select",
-                            label = "Select algorithm",
-                            choices = list(
-                              "Louvain" = "lv",
-                              "Walktrap" = "wk",
-                              "Fast Greedy" = "fg",
-                              "Infomap" = "imap",
-                              "Edge betweeness" = "ebetweens",
-                              "Label Propagation"="lp",
-                              "Spinglass"="sg"
-                            ),
-                            selected = "lv"
-                ),
-                # actionButton("back_button", "Back"),
-                # actionButton("reset_button", "Reset"),
-                #hr(),
-                # radioButtons("interactions","Show Interactions:",choices=c(0)),
-                textInput("searchentitiy","Search Entity"),
-                actionButton("search_button","Search")
+                  id = "graphbox",
+                  tags$div(id="graph2"),
+                  tags$style(type="text/css", "#graphbox {max-width: 600px; height: 550px; max-height: 900px; margin: auto;}"),
+                  uiOutput("graph_with_sigma")
               ),
               box(width = NULL,
                 tabsetPanel(
@@ -68,24 +43,59 @@ body <- dashboardBody(
                   tabPanel("PageRanks", plotlyOutput("pagerank_distribution")),
                   tabPanel("Disease Pathway", 
                     tabBox(
-                      width=500,title="",
-                      id="pathinfo",
-                      tabPanel(
-                        "Data",
-                        fluidRow(
-                          splitLayout(
-                            cellWidths = c("100%", "0%"),
-                            DT::dataTableOutput("plotgraph1")
-                          )
-                        )
-                      )
-                      #,tabPanel("Heatmap",plotlyOutput("plotgraph2"))
+                     width=500,title="",
+                     id="pathinfo",
+                     tabPanel(
+                       "Data",
+                       fluidRow(
+                         splitLayout(
+                           cellWidths = c("100%", "0%"),
+                           DT::dataTableOutput("plotgraph1")
+                         )
+                       )
+                     )
+                     # tabPanel("Heatmap",plotlyOutput("plotgraph2"))
                     )
                   )
                 )
               )
+            ),
+            column(3,
+                   
+              box(width = NULL,
+                status = "warning",
+                selectInput("select",
+                  label = "Algorithm",
+                  choices = list(
+                   "Louvain" = "lv",
+                   "Walktrap" = "wk",
+                   "Fast Greedy" = "fg",
+                   "Infomap" = "imap",
+                   "Edge betweeness" = "ebetweens",
+                   "Label Propagation"="lp",
+                   "Spinglass"="sg"
+                  ),
+                  selected = "lv"
+                ),
+                actionButton("back_button", "Back"),
+                tags$style(type="text/css", "#back_button {float: left; margin: 5px;}"),
+                actionButton("reset_button", "Reset"),
+                tags$style(type="text/css", "#reset_button {float: left; margin: 5px;}")
+              ),
+              box(width = NULL,
+                status = "warning",
+                checkboxGroupInput("entTypes",
+                  label = "Entity Types",
+                  choices = list("Protein" = 1, "Chemical" = 2, "Disease" = 3),
+                  selected = c(1,2,3)
+                )
+              ),
+              box(width = NULL,
+                status = "warning",
+                textInput("searchentitiy","Search Entity"),
+                actionButton("search_button","Search")
+              )
             )
-
           ),
           value=2
         ),
@@ -163,7 +173,6 @@ body <- dashboardBody(
   tags$script(src='rendergraph.js'),
   tags$link(rel = "stylesheet", type = "text/css", href = "graph.css")
 )
-
 
 dashboardPage(
   header,

@@ -19,14 +19,14 @@ build_initial_graph <-function (conf){
   
   #print(typ1_types)
   #print(typ2_types)
-  if(is.null(conf$Type1_Col))
-  {
-    vert_atr<-FALSE
-    typ1<- "type1"
-    typ2<-"type2"
-    table[,typ1] <- "Entity1"
-    table[,typ2] <- "Entity2"
-  }
+  # if(is.null(conf$Type1_Col))
+  # {
+  #   vert_atr<-FALSE
+  #   typ1<- "type1"
+  #   typ2<-"type2"
+  #   table[,typ1] <- "Entity1"
+  #   table[,typ2] <- "Entity2"
+  # }
   
   
   table <- read.csv(file, header = TRUE, sep = ",",stringsAsFactors = F)
@@ -41,11 +41,9 @@ build_initial_graph <-function (conf){
   
   
   for(ii in lookup$Entity){
-  indxdata1 <- which(data1[,typ1]==ii)
-  data1[indxdata1,"color"] <- lookup[which(lookup$Entity== ii),]$Color
-  
+    indxdata1 <- which(data1[,typ1]==ii)
+    data1[indxdata1,"color"] <- lookup[which(lookup$Entity== ii),]$Color
   }
-  
   
   #lookup <- typ2_types[[1]]
   

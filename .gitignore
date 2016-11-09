@@ -1,5 +1,3 @@
 .Rhistory
 *.rds
 .RData
-*.json
-www/data/current_graph.json

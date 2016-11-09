@@ -36,6 +36,7 @@ function(input, output, session){
   
   
   
+  # Populate Entity definitions dropdowns if input file is selected
   output$contents <- renderTable({
     inFile <- input$file1
     
@@ -52,6 +53,8 @@ function(input, output, session){
     return (NULL)
   })
   
+  # Event handler for Done button in Entity definitions tab
+  # Update dropdowns in Define Entity interactions and Entity colors
   observeEvent(input$entitymapping_button, {
     inFile <- input$file1
     dat <- read.csv(inFile$datapath, header = input$header,
@@ -62,10 +65,12 @@ function(input, output, session){
     updateSelectInput(session,"entcolors",choices = uniqueentities)
     updateSelectInput(session,"entintr1",choices=uniqueentities)
     updateSelectInput(session,"entintr2",choices=uniqueentities)
+    # updateCheckboxGroupInput(session,"entTypes",choices = uniqueentities)
   })
   
   
-  #set entity color button
+  # Event handler for Assign color button in Entity colors tab
+  # Renders color mappings table when button is pressed
   observeEvent(input$entdone,{
     print(uniqueentities)
     colormapping <<- rbind(colormapping,data.frame(Entity=toString(input[["entcolors"]]),Color=toString(input[["entcol"]])))
@@ -73,7 +78,7 @@ function(input, output, session){
   })
   
   
-  #set entity interacton button
+  # Event handler for Assign interaction button in Define Entity interactions tab
   observeEvent(input$entintrdone,{
     if(nrow(interactionmapping) >0){
       comb1 <- sum(grepl(input[["entintr1"]],interactionmapping$Entity1))
@@ -280,12 +285,14 @@ function(input, output, session){
   
   # writes out the current viz graph to a json for sigma
   graph_to_write <- reactive({
+    print("graph_to_write")
     data <- peek_top(global$viz_stack)    
     graph <- data[[1]]
     communities <- data[[2]]
     print(is_comm_graph)
     # Try and apply community detection if there are a lot of nodes to visualize
-    if (vcount(graph) >  as.numeric(conf$community_threshold)){
+    if (vcount(graph) >  as.numeric(conf$community_threshold)) {
+      print("apply community detection")
       community_graph <- get_community_graph(graph, communities)
       if (vcount(community_graph) > 1){ 
         is_comm_graph <<- TRUE
@@ -307,14 +314,20 @@ function(input, output, session){
     for(nd in V(graph)){
       
       atr <- get.vertex.attribute(graph,"type",nd)
-      print(atr)
+      #print(atr)
       # if(grepl(atr,input$interactions) == FALSE){
       #   dellist[indx] <- nd
       #   indx <- indx+1
       # }
       
+      # if(atr == "Protein") {
+      #   dellist[indx] <- nd
+      #   indx <- indx+1
+      #   print("Deleted")
+      # }
+      
     }
-    graph <- delete.vertices(graph,dellist)
+    #graph <- delete.vertices(graph,dellist)
     
     return(list(graph, FALSE))
   })
@@ -323,11 +336,11 @@ function(input, output, session){
   output$graph_with_sigma <- renderUI({
     data <- graph_to_write()
     #print(length(data[[1]]))
-#    print('data[[1]]')
-#    print(data[[1]])
-#    print('data[[2]]')
-#    print(data[[2]])
-    #print(length(data[[2]]))
+   print('data[[1]]')
+   print(data[[1]])
+   print('data[[2]]')
+   print(data[[2]])
+    # print(length(data[[2]]))
     print("printing conf")
     print(conf)
     makenetjson(data[[1]], "./www/data/current_graph.json", data[[2]],conf) 
@@ -345,11 +358,11 @@ function(input, output, session){
     nodes <- get.data.frame(graph, what="vertices")
     nodes$degree <- degree(graph)
     nodes$pagerank <- page_rank(graph)$vector
-    if (is_comm_graph==TRUE){
-      colnames(nodes) <- c("Name", "Type", "Comm", "Size", "Degree","PageRank")
-    } else {
-      colnames(nodes) <- c("Name", "Type", "Comm", "Degree","PageRank")
-    }
+    # if (is_comm_graph==TRUE){
+    #   colnames(nodes) <- c("Name", "Type", "Comm", "Size", "Degree","PageRank")
+    # } else {
+    #   colnames(nodes) <- c("Name", "Type", "Comm", "Degree","PageRank")
+    # }
     global$nodes <- nodes
   }
   
@@ -362,7 +375,7 @@ function(input, output, session){
       y <- list(
         title = "Number of nodes"
       )
-      plot_ly(x = global$nodes[["Degree"]], type="histogram",  color="#FF8800") %>%
+      plot_ly(x = global$nodes[["degree"]], type="histogram",  color="#FF8800") %>%
         layout(xaxis = x, yaxis = y)
     }
   })
@@ -376,7 +389,7 @@ function(input, output, session){
       y <- list(
         title = "Number of nodes"
       )
-      plot_ly(x = global$nodes[["PageRank"]], type="histogram",  color="#FF8800") %>%
+      plot_ly(x = global$nodes[["pagerank"]], type="histogram",  color="#FF8800") %>%
         layout(xaxis = x, yaxis = y)
     }    
   })
@@ -384,7 +397,8 @@ function(input, output, session){
   # Generate a table of node degrees
   output$degree_table <- DT::renderDataTable({
     if (!is.null(global$nodes)){
-      table <- global$nodes[c("Name", "Degree","PageRank")]
+      # table <- global$nodes[c("Name", "Type", "Degree","PageRank")]
+      table <- global$nodes[c("name", "type", "degree","pagerank")]
     }
   },
   options = list(order = list(list(1, 'desc'))),
@@ -403,7 +417,7 @@ function(input, output, session){
     protienDSpathway<<-data.frame()
     sortedlabel<-NULL
     #labelfreq <- lapply(rawlabels,table)
-    proteins<-global$nodes[global$nodes$Type=="Protein","Name"]
+    proteins<-global$nodes[global$nodes$type=="Protein","name"]
     print("Printing Proteins ..")
     #print(proteins)
     

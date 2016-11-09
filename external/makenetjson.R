@@ -1,6 +1,7 @@
 library(jsonlite)
 
-makenetjson<-function(gcomm, filename, comm_graph,conf){
+makenetjson<-function(gcomm, filename, comm_graph,conf) {
+  print("makenetjson")
   gcomm=simplify(gcomm, edge.attr.comb=list("sum"), remove.loops=FALSE)
   
   # We need the following attributes for sigma
