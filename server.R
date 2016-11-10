@@ -38,6 +38,7 @@ function(input, output, session){
   
   # Populate Entity definitions dropdowns if input file is selected
   output$contents <- renderTable({
+    print("output$contents")
     inFile <- input$file1
     
     if (is.null(inFile))
@@ -59,7 +60,6 @@ function(input, output, session){
     inFile <- input$file1
     dat <- read.csv(inFile$datapath, header = input$header,
                     sep = input$sep, quote = input$quote)
-    print(input$type1)
     x<-paste(dat[,"type1"],dat[,"type2"],collapse = ",",sep=",")
     uniqueentities<<-unique(unlist(strsplit(x,",")))
     updateSelectInput(session,"entcolors",choices = uniqueentities)
@@ -157,12 +157,12 @@ function(input, output, session){
     updateRadioButtons(session,"interactions",label="Show Interactions:",choices=z,selected="All")
     
     print(input$community_col)
-    output$legend<- renderUI({
-      
-      cm<-p("Communities are ", span(input$community_col, style = paste("color:",input$community_col,sep="")))
-      z<-apply(colormapping,1, processrow)
-      return(append(z,cm))
-    })
+    # output$legend<- renderUI({
+    #   
+    #   cm<-p("Communities are ", span(input$community_col, style = paste("color:",input$community_col,sep="")))
+    #   z<-apply(colormapping,1, processrow)
+    #   return(append(z,cm))
+    # })
     
     
     
@@ -353,6 +353,66 @@ function(input, output, session){
     return(includeHTML("./www/graph.html"))
   })
   
+  
+  output$choose_entTypes <- renderUI({
+    dat <- read.csv(conf$FilePath, header = input$header,
+                    sep = input$sep, quote = input$quote)
+    x<-paste(dat[,"type1"],dat[,"type2"],collapse = ",",sep=",")
+    uniqueentities<<-unique(unlist(strsplit(x,",")))
+    
+    # Create the checkboxes and select them all by default
+    checkboxGroupInput("entTypes", "Entity Types", 
+                       choices  = uniqueentities,
+                       selected = uniqueentities)
+  })
+  
+  
+  output$legend <- renderUI({
+
+    # Create a Bootstrap-styled table
+    tags$table(class = "table",
+      tags$thead(tags$tr(
+       tags$th("Color"),
+       tags$th("Entity")
+      )),
+      tags$tbody(
+       tags$tr(
+         tags$td(span(style = sprintf(
+           "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
+           "#77B300"
+         ))),
+         tags$td("Protein")
+       ),
+       tags$tr(
+         tags$td(span(style = sprintf(
+           "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
+           "#FF8800"
+         ))),
+         tags$td("Chemical")
+       ),
+       tags$tr(
+         tags$td(span(style = sprintf(
+           "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
+           "#CC0000"
+         ))),
+         tags$td("Disease")
+       ),
+       tags$tr(
+         tags$td(span(style = sprintf(
+           "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
+           "#2ADDDD"
+         ))),
+         tags$td("Community")
+       )
+      )
+    )
+  })
+
+  
+  observeEvent(input$entTypes, {
+    print(input$entTypes)
+  })
+
   # update the summary stats
   update_stats <- function(graph, is_comm_graph){
     nodes <- get.data.frame(graph, what="vertices")

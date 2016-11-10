@@ -84,16 +84,16 @@ body <- dashboardBody(
               ),
               box(width = NULL,
                 status = "warning",
-                checkboxGroupInput("entTypes",
-                  label = "Entity Types",
-                  choices = list("Protein" = 1, "Chemical" = 2, "Disease" = 3),
-                  selected = c(1,2,3)
-                )
+                uiOutput("choose_entTypes")
               ),
               box(width = NULL,
                 status = "warning",
                 textInput("searchentitiy","Search Entity"),
                 actionButton("search_button","Search")
+              ),
+              box(width = NULL,
+                  solidHeader = TRUE,
+                  uiOutput("legend")
               )
             )
           ),
