@@ -28,10 +28,13 @@ body <- dashboardBody(
           'Viewer',
           fluidRow (
             column(9,
+              # textOutput("name"),
+              # tags$style(type="text/css", "#name {background-color: white; margin: 5px}"),
               box(width = NULL,
+                  textOutput("name"),
                   id = "graphbox",
                   tags$div(id="graph2"),
-                  tags$style(type="text/css", "#graphbox {max-width: 600px; height: 550px; max-height: 900px; margin: auto;}"),
+                  tags$style(type="text/css", "#graphbox {height: 550px; max-height: 900px; margin: auto;}"),
                   uiOutput("graph_with_sigma")
               ),
               box(width = NULL,

@@ -211,7 +211,7 @@ function(input, output, session){
       return(NULL)
     }
     z<-apply(val,1,function(x) which(x==max(x)))
-    print(rownames(z))
+    #print(rownames(z))
     last_selected_row = tail(row, n=1)
     
     
@@ -289,7 +289,7 @@ function(input, output, session){
     data <- peek_top(global$viz_stack)    
     graph <- data[[1]]
     communities <- data[[2]]
-    print(is_comm_graph)
+    print(paste("is_comm_graph=",is_comm_graph))
     # Try and apply community detection if there are a lot of nodes to visualize
     if (vcount(graph) >  as.numeric(conf$community_threshold)) {
       print("apply community detection")
@@ -334,15 +334,8 @@ function(input, output, session){
   
   # render with sigma the current graph (in json)
   output$graph_with_sigma <- renderUI({
+    print("output$graph_with_sigma")
     data <- graph_to_write()
-    #print(length(data[[1]]))
-   print('data[[1]]')
-   print(data[[1]])
-   print('data[[2]]')
-   print(data[[2]])
-    # print(length(data[[2]]))
-    print("printing conf")
-    print(conf)
     makenetjson(data[[1]], "./www/data/current_graph.json", data[[2]],conf) 
     update_stats(data[[1]], data[[2]])
     
@@ -474,6 +467,7 @@ function(input, output, session){
   })
   
   output$plotgraph1 <-DT::renderDataTable({
+    print("output$plotgraph1")
     protienDSpathway<<-data.frame()
     sortedlabel<-NULL
     #labelfreq <- lapply(rawlabels,table)
