@@ -174,7 +174,8 @@ body <- dashboardBody(
   tags$script(src='lib/sigma.layout.forceAtlas2.min.js'),
   tags$script(src='lib/sigma.parsers.json.min.js'),
   tags$script(src='lib/sigma.renderers.customShapes.min.js'),
-  tags$script(src='lib/sigma.plugins.filter.min.js'),
+  # tags$script(src='lib/sigma.plugins.filter.min.js'),
+  tags$script(src='lib/sigma.plugins.filter.js'),
   tags$script(src='rendergraph.js'),
   tags$link(rel = "stylesheet", type = "text/css", href = "graph.css")
 )
