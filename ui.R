@@ -41,10 +41,10 @@ body <- dashboardBody(
                 tabsetPanel(
                   id = "details",
                   selected = "Entities",
-                  tabPanel("Entities", DT::dataTableOutput("degree_table")),
+                  tabPanel("Entities", DT::dataTableOutput("entities_table")),
                   tabPanel("Degrees", plotlyOutput("degree_distribution")),
-                  tabPanel("PageRanks", plotlyOutput("pagerank_distribution")),
-                  tabPanel("Disease Pathway", 
+                  tabPanel("Page Ranks", plotlyOutput("pagerank_distribution")),
+                  tabPanel("Disease Pathways", 
                     tabBox(
                      width=500,title="",
                      id="pathinfo",
@@ -103,7 +103,7 @@ body <- dashboardBody(
           value=2
         ),
         tabPanel(
-          'Configuration Options',
+          'Configuration',
           tabBox(
             width=500,
             title="",
@@ -137,26 +137,26 @@ body <- dashboardBody(
               tags$hr(),
               p('File size limit is 100MB')
             ),
-            tabPanel("Entity definitions",
+            tabPanel("Entity Definitions",
               selectInput("entity1","Entity1 Column:",c()),
               selectInput("entity2","Entity2 Column:",c()),
               selectInput("type1","Entitiy1 Type Column:",c()),
               selectInput("type2","Entity2 Type Column:",c()),
               actionButton("entitymapping_button", "Done")
             ),
-            tabPanel("Define Entity interactions",
+            tabPanel("Entity Interactions",
               selectInput("entintr1","Select entity 1",choices=c()),
               selectInput("entintr2","Select entity 2",choices=c()),
               actionButton("entintrdone","Assign interaction"),
               tableOutput("entintrtable")
             ),
-            tabPanel("Entity colors",
+            tabPanel("Entity Colors",
               selectInput("entcolors","Select entity",choices=c()),
               colourInput("entcol","Select entity color"),
               actionButton("entdone","Assign color"),
               tableOutput("enttable")
             ),
-            tabPanel("Community parameters",
+            tabPanel("Community Parameters",
               colourInput("community_col","Community Color","#2ADDDD"),
               numericInput("comm_size","Max. community size:",value = 400)
             )
@@ -173,6 +173,8 @@ body <- dashboardBody(
   tags$script(src='lib/sigma.min.js'),
   tags$script(src='lib/sigma.layout.forceAtlas2.min.js'),
   tags$script(src='lib/sigma.parsers.json.min.js'),
+  tags$script(src='lib/sigma.renderers.customShapes.min.js'),
+  tags$script(src='lib/sigma.plugins.filter.min.js'),
   tags$script(src='rendergraph.js'),
   tags$link(rel = "stylesheet", type = "text/css", href = "graph.css")
 )

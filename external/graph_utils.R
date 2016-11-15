@@ -111,6 +111,7 @@ get_community_graph <- function(graph, communities){
   # Set the size of each node to be proportional to the community size
   counts <- count(communities$membership)
   V(community_graph)$size <- counts$freq
+  V(community_graph)$type <- "Community"
   
   #labellist <- lapply(communities(communities),len)
   #rawlabels <- lapply(labellist,unlist)

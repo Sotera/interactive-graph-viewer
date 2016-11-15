@@ -25,14 +25,174 @@ lbllist<<-NULL
 is_comm_graph <- TRUE
 colormapping<-data.frame(Entity=character(),Color=character(),stringsAsFactors = FALSE)
 interactionmapping<-data.frame(Entity1=character(),Entity2=character(),stringsAsFactors = FALSE)
-uniqueentities <<- NULL
+# uniqueentities <<- NULL
 
 
 function(input, output, session){ 
   global <- reactiveValues()
-  
   global$viz_stack <- insert_top(s1, list(graph, communities))
   global$name <- insert_top(s2, "")
+  
+  # render with sigma the current graph (in json)
+  output$graph_with_sigma <- renderUI({
+    print("output$graph_with_sigma")
+    data <- graph_to_write()
+    makenetjson(data[[1]], "./www/data/current_graph.json", data[[2]],conf) 
+    update_stats(data[[1]], data[[2]])
+    
+    observe({
+      session$sendCustomMessage(type = "updategraph",message="xyz")
+    })
+    
+    return(includeHTML("./www/graph.html"))
+  })
+  
+  # Generate the current graph name (as a list of community labels)
+  output$name <- renderText({
+    name <- as.list(rev(global$name))
+    name <- paste(name, collapse = "/", sep="/")
+    return(paste(c("Current Community", name)))
+  })
+  
+  # Generate a table of node degrees
+  output$entities_table <- DT::renderDataTable({
+    if (!is.null(global$nodes)){
+      # table <- global$nodes[c("Name", "Type", "Degree","PageRank")]
+      table <- global$nodes[c("name", "type", "degree","pagerank")]
+    }
+  },
+  options = list(order = list(list(1, 'desc'))),
+  rownames = FALSE,
+  selection = "single"
+  )
+  
+  # Plot the degree distribution of the current graph
+  output$degree_distribution <- renderPlotly({  
+    if (!is.null(global$nodes)){
+      x <-list(
+        title = "Degree"
+      )
+      y <- list(
+        title = "Number of nodes"
+      )
+      plot_ly(x = global$nodes[["degree"]], type="histogram",  color="#FF8800") %>%
+        layout(xaxis = x, yaxis = y)
+    }
+  })
+  
+  # Plot the pagerank distribution of the current graph
+  output$pagerank_distribution <- renderPlotly({
+    if (!is.null(global$nodes)) {
+      x <-list(
+        title = "PageRank"
+      )
+      y <- list(
+        title = "Number of nodes"
+      )
+      plot_ly(x = global$nodes[["pagerank"]], type="histogram",  color="#FF8800") %>%
+        layout(xaxis = x, yaxis = y)
+    }    
+  })
+  
+  output$plotgraph1 <-DT::renderDataTable(
+    {
+      print("output$plotgraph1")
+      protienDSpathway<<-data.frame()
+      sortedlabel<-NULL
+      #labelfreq <- lapply(rawlabels,table)
+      proteins<-global$nodes[global$nodes$type=="Protein","name"]
+      print("Printing Proteins ..")
+      #print(proteins)
+      
+      # This takes forever. If we can load a previously built object do it; otherwise don't hold your breath
+      withProgress(message = "Loading ...",value = 0,{
+        if(is.null(mp)){
+          filename = 'mp.rds'
+          if (file.exists(filename)){
+            mp <<- NULL
+            mp <<- readRDS(filename)
+          } else {
+            mp <<- getproteinlabeldict()
+            saveRDS(mp, file=filename)
+          }
+        }
+      })
+      lapply(proteins,appendlabel)
+      
+      table <- data.frame(Protein="No pathway data available")
+      
+      if (nrow(protienDSpathway)>1){
+        labelfreq <- table(protienDSpathway)
+        if (ncol(labelfreq)>1){
+          z<-apply(labelfreq,1,sum)
+          sortedlabel<-labelfreq[order(as.numeric(z), decreasing=TRUE),]
+          disptable<<-as.data.frame.matrix(sortedlabel)
+        } else {
+          disptable <<- as.data.frame.matrix(labelfreq)
+        }
+        row.names(disptable) <<- strtrim(row.names(disptable), 50)
+      } 
+      disptable
+    },
+    rownames = TRUE,
+    selection = "single"
+  )
+  
+  output$choose_entTypes <- renderUI({
+    dat <- read.csv(conf$FilePath, header = input$header,
+                    sep = input$sep, quote = input$quote)
+    x<-paste(dat[,"type1"],dat[,"type2"],collapse = ",",sep=",")
+    uniqueentities<<-unique(unlist(strsplit(x,",")))
+    
+    # Create the checkboxes and select them all by default
+    checkboxGroupInput("entTypes", "Entity Types",
+                       choices  = uniqueentities,
+                       selected = uniqueentities)
+  })
+  
+  
+  output$legend <- renderUI({
+    
+    # Create a Bootstrap-styled table
+    tags$table(class = "table",
+               tags$thead(tags$tr(
+                 tags$th("Color"),
+                 tags$th("Entity")
+               )),
+               tags$tbody(
+                 tags$tr(
+                   tags$td(span(style = sprintf(
+                     "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
+                     "#77B300"
+                   ))),
+                   tags$td("Protein")
+                 ),
+                 tags$tr(
+                   tags$td(span(style = sprintf(
+                     "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
+                     "#FF8800"
+                   ))),
+                   tags$td("Chemical")
+                 ),
+                 tags$tr(
+                   tags$td(span(style = sprintf(
+                     "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
+                     "#CC0000"
+                   ))),
+                   tags$td("Disease")
+                 ),
+                 tags$tr(
+                   tags$td(span(style = sprintf(
+                     "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
+                     "#2ADDDD"
+                   ))),
+                   tags$td("Community")
+                 )
+               )
+    )
+  })
+  
+  
   
   
   
@@ -52,6 +212,20 @@ function(input, output, session){
     updateSelectInput(session,"type1",choices = colnames(dat))
     updateSelectInput(session,"type2",choices = colnames(dat))
     return (NULL)
+  })
+
+  output$plotgraph2 <- renderPlotly({ 
+    #withProgress(message = "Loading ...",value = 0,{
+    #getrawentititesfromComm(global$currentCommId)
+    #})
+    labelfreq <- table(protienDSpathway)
+    z<-apply(labelfreq,1,sum)
+    sortedlabel<-labelfreq[order(z, decreasing=TRUE),]
+    x<-as.data.frame(sortedlabel,row.names=rownames(sortedlabel),col.names=colnames(sortedlabel))
+    
+    
+    plot_ly(z = sortedlabel,x=colnames(sortedlabel),y=rownames(sortedlabel), type = "heatmap",hoverinfo = "text",
+            text = paste(colnames(sortedlabel),rownames(sortedlabel)),colorscale = "Hot") %>% layout(xaxis = list(title="Proteins"),yaxis=list(title="Disease Pathway"))
   })
   
   # Event handler for Done button in Entity definitions tab
@@ -136,47 +310,6 @@ function(input, output, session){
     resetgraph(conf)
   })
   
-  resetgraph<-function(conf)
-  {
-    graph <- build_initial_graph(conf)
-    communities <- get_communities(graph,input$select)
-    global$viz_stack <- rstack()
-    global$viz_stack <- insert_top(global$viz_stack, list(graph, communities))
-    global$name <- insert_top(s2, "")
-    
-    x<-as.data.frame(conf$Interactions)
-    
-    z<-c()
-    itr<-1
-    for(ii in x$Entity1){
-      pastestr=paste0(ii,"-",x$Entity2[itr],sep="")
-      z[itr] <- c(pastestr=pastestr)
-      itr<-itr+1
-    }
-    z[itr] <- paste0("all"="All")
-    updateRadioButtons(session,"interactions",label="Show Interactions:",choices=z,selected="All")
-    
-    print(input$community_col)
-    # output$legend<- renderUI({
-    #   
-    #   cm<-p("Communities are ", span(input$community_col, style = paste("color:",input$community_col,sep="")))
-    #   z<-apply(colormapping,1, processrow)
-    #   return(append(z,cm))
-    # })
-    
-    
-    
-  }
-  
-  processrow<-function (elm)
-  {
-    p(paste(toString(elm[1]), "'s are ",sep=""), span(toString(elm[2]), style = paste("color:",toString(elm[2]),sep="")))
-  }
-  
-  observeEvent(input$variable, {
-    #print(input$variable)
-  })
-  
   #Search button
   observeEvent(input$search_button,{
     searchelm <- strsplit(input$searchentitiy,",")
@@ -225,7 +358,7 @@ function(input, output, session){
   
   # table click
   observe({
-    row <- input$degree_table_rows_selected
+    row <- input$entities_table_rows_selected
     if (length(row)){
       print(row)
       session$sendCustomMessage(type = "commmemmsg" ,
@@ -283,17 +416,74 @@ function(input, output, session){
     }
   })
   
+  observeEvent(input$entTypes, {
+    print(input$entTypes)
+  })
+  
+  observeEvent(input$variable, {
+    #print(input$variable)
+  })
+  
+  resetgraph<-function(conf)
+  {
+    graph <- build_initial_graph(conf)
+    communities <- get_communities(graph,input$select)
+    global$viz_stack <- rstack()
+    global$viz_stack <- insert_top(global$viz_stack, list(graph, communities))
+    global$name <- insert_top(s2, "")
+    
+    x<-as.data.frame(conf$Interactions)
+    
+    z<-c()
+    itr<-1
+    for(ii in x$Entity1){
+      pastestr=paste0(ii,"-",x$Entity2[itr],sep="")
+      z[itr] <- c(pastestr=pastestr)
+      itr<-itr+1
+    }
+    z[itr] <- paste0("all"="All")
+    updateRadioButtons(session,"interactions",label="Show Interactions:",choices=z,selected="All")
+    
+    print(input$community_col)
+    # output$legend<- renderUI({
+    #   
+    #   cm<-p("Communities are ", span(input$community_col, style = paste("color:",input$community_col,sep="")))
+    #   z<-apply(colormapping,1, processrow)
+    #   return(append(z,cm))
+    # })
+  }
+  
+  processrow<-function (elm)
+  {
+    p(paste(toString(elm[1]), "'s are ",sep=""), span(toString(elm[2]), style = paste("color:",toString(elm[2]),sep="")))
+  }
+  
+  # update the summary stats
+  update_stats <- function(graph, is_comm_graph){
+    nodes <- get.data.frame(graph, what="vertices")
+    nodes$degree <- degree(graph)
+    nodes$pagerank <- page_rank(graph)$vector
+    # if (is_comm_graph==TRUE){
+    #   colnames(nodes) <- c("Name", "Type", "Comm", "Size", "Degree","PageRank")
+    # } else {
+    #   colnames(nodes) <- c("Name", "Type", "Comm", "Degree","PageRank")
+    # }
+    global$nodes <- nodes
+  }
+  
   # writes out the current viz graph to a json for sigma
   graph_to_write <- reactive({
     print("graph_to_write")
     data <- peek_top(global$viz_stack)    
     graph <- data[[1]]
+    graphdf <- get.data.frame(graph, what="vertices")
     communities <- data[[2]]
     print(paste("is_comm_graph=",is_comm_graph))
     # Try and apply community detection if there are a lot of nodes to visualize
     if (vcount(graph) >  as.numeric(conf$community_threshold)) {
       print("apply community detection")
       community_graph <- get_community_graph(graph, communities)
+      commdf <- get.data.frame(community_graph, what="vertices")
       if (vcount(community_graph) > 1){ 
         is_comm_graph <<- TRUE
         return(list(community_graph, TRUE))
@@ -332,194 +522,4 @@ function(input, output, session){
     return(list(graph, FALSE))
   })
   
-  # render with sigma the current graph (in json)
-  output$graph_with_sigma <- renderUI({
-    print("output$graph_with_sigma")
-    data <- graph_to_write()
-    makenetjson(data[[1]], "./www/data/current_graph.json", data[[2]],conf) 
-    update_stats(data[[1]], data[[2]])
-    
-    observe({
-      session$sendCustomMessage(type = "updategraph",message="xyz")
-    })
-    
-    return(includeHTML("./www/graph.html"))
-  })
-  
-  
-  output$choose_entTypes <- renderUI({
-    dat <- read.csv(conf$FilePath, header = input$header,
-                    sep = input$sep, quote = input$quote)
-    x<-paste(dat[,"type1"],dat[,"type2"],collapse = ",",sep=",")
-    uniqueentities<<-unique(unlist(strsplit(x,",")))
-    
-    # Create the checkboxes and select them all by default
-    checkboxGroupInput("entTypes", "Entity Types", 
-                       choices  = uniqueentities,
-                       selected = uniqueentities)
-  })
-  
-  
-  output$legend <- renderUI({
-
-    # Create a Bootstrap-styled table
-    tags$table(class = "table",
-      tags$thead(tags$tr(
-       tags$th("Color"),
-       tags$th("Entity")
-      )),
-      tags$tbody(
-       tags$tr(
-         tags$td(span(style = sprintf(
-           "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
-           "#77B300"
-         ))),
-         tags$td("Protein")
-       ),
-       tags$tr(
-         tags$td(span(style = sprintf(
-           "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
-           "#FF8800"
-         ))),
-         tags$td("Chemical")
-       ),
-       tags$tr(
-         tags$td(span(style = sprintf(
-           "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
-           "#CC0000"
-         ))),
-         tags$td("Disease")
-       ),
-       tags$tr(
-         tags$td(span(style = sprintf(
-           "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
-           "#2ADDDD"
-         ))),
-         tags$td("Community")
-       )
-      )
-    )
-  })
-
-  
-  observeEvent(input$entTypes, {
-    print(input$entTypes)
-  })
-
-  # update the summary stats
-  update_stats <- function(graph, is_comm_graph){
-    nodes <- get.data.frame(graph, what="vertices")
-    nodes$degree <- degree(graph)
-    nodes$pagerank <- page_rank(graph)$vector
-    # if (is_comm_graph==TRUE){
-    #   colnames(nodes) <- c("Name", "Type", "Comm", "Size", "Degree","PageRank")
-    # } else {
-    #   colnames(nodes) <- c("Name", "Type", "Comm", "Degree","PageRank")
-    # }
-    global$nodes <- nodes
-  }
-  
-  # Plot the degree distribution of the current graph
-  output$degree_distribution <- renderPlotly({  
-    if (!is.null(global$nodes)){
-      x <-list(
-        title = "Degree"
-      )
-      y <- list(
-        title = "Number of nodes"
-      )
-      plot_ly(x = global$nodes[["degree"]], type="histogram",  color="#FF8800") %>%
-        layout(xaxis = x, yaxis = y)
-    }
-  })
-  
-  # Plot the pagerank distribution of the current graph
-  output$pagerank_distribution <- renderPlotly({
-    if (!is.null(global$nodes)) {
-      x <-list(
-        title = "PageRank"
-      )
-      y <- list(
-        title = "Number of nodes"
-      )
-      plot_ly(x = global$nodes[["pagerank"]], type="histogram",  color="#FF8800") %>%
-        layout(xaxis = x, yaxis = y)
-    }    
-  })
-  
-  # Generate a table of node degrees
-  output$degree_table <- DT::renderDataTable({
-    if (!is.null(global$nodes)){
-      # table <- global$nodes[c("Name", "Type", "Degree","PageRank")]
-      table <- global$nodes[c("name", "type", "degree","pagerank")]
-    }
-  },
-  options = list(order = list(list(1, 'desc'))),
-  rownames = FALSE,
-  selection = "single"
-  )
-  
-  # Generate the current graph name (as a list of community labels)
-  output$name <- renderText({
-    name <- as.list(rev(global$name))
-    name <- paste(name, collapse = "/", sep="/")
-    return(paste(c("Current Community", name)))
-  })
-  
-  output$plotgraph1 <-DT::renderDataTable({
-    print("output$plotgraph1")
-    protienDSpathway<<-data.frame()
-    sortedlabel<-NULL
-    #labelfreq <- lapply(rawlabels,table)
-    proteins<-global$nodes[global$nodes$type=="Protein","name"]
-    print("Printing Proteins ..")
-    #print(proteins)
-    
-    # This takes forever. If we can load a previously built object do it; otherwise don't hold your breath
-    withProgress(message = "Loading ...",value = 0,{
-      if(is.null(mp)){
-        filename = 'mp.rds'
-        if (file.exists(filename)){
-          mp <<- NULL
-          mp <<- readRDS(filename)
-        } else {
-          mp <<- getproteinlabeldict()
-          saveRDS(mp, file=filename)
-        }
-      }
-    })
-    lapply(proteins,appendlabel)
-    
-    table <- data.frame(Protein="No pathway data available")
-    
-    if (nrow(protienDSpathway)>1){
-      labelfreq <- table(protienDSpathway)
-      if (ncol(labelfreq)>1){
-        z<-apply(labelfreq,1,sum)
-        sortedlabel<-labelfreq[order(as.numeric(z), decreasing=TRUE),]
-        disptable<<-as.data.frame.matrix(sortedlabel)
-      } else {
-        disptable <<- as.data.frame.matrix(labelfreq)
-      }
-      row.names(disptable) <<- strtrim(row.names(disptable), 50)
-    } 
-    disptable
-  },
-  rownames = TRUE,
-  selection = "single")
-  
-  
-  output$plotgraph2 <- renderPlotly({ 
-    #withProgress(message = "Loading ...",value = 0,{
-    #getrawentititesfromComm(global$currentCommId)
-    #})
-    labelfreq <- table(protienDSpathway)
-    z<-apply(labelfreq,1,sum)
-    sortedlabel<-labelfreq[order(z, decreasing=TRUE),]
-    x<-as.data.frame(sortedlabel,row.names=rownames(sortedlabel),col.names=colnames(sortedlabel))
-    
-    
-    plot_ly(z = sortedlabel,x=colnames(sortedlabel),y=rownames(sortedlabel), type = "heatmap",hoverinfo = "text",
-            text = paste(colnames(sortedlabel),rownames(sortedlabel)),colorscale = "Hot") %>% layout(xaxis = list(title="Proteins"),yaxis=list(title="Disease Pathway"))
-  })
 }

@@ -1,5 +1,7 @@
-(function() {
+$(document).ready(function() {
+  
 	var searchelm = "";
+	var filter;
   
   sigma.parsers.json("data/current_graph.json",
   
@@ -9,11 +11,13 @@
 
 
     function(s) { //This function is passed an instance of Sigma s
+      //filter = new sigma.plugins.filter(s);
       var g = document.querySelector('#graph2');
-    
+
       try {
         Shiny.addCustomMessageHandler("commmemmsg",
           function(message) {
+            console.log("commmemmsg");
             JSON.parse(JSON.stringify(message), function(k, v) {
               if (k == "id") {
 		            elems = String(v).split(",");
@@ -40,6 +44,7 @@
 
       Shiny.addCustomMessageHandler("updategraph",
         function(message) {
+          console.log("updategraph");
           // to delete & refresh the graph
           var g = document.querySelector('#graph2');
           var p = g.parentNode;
@@ -55,6 +60,9 @@
               container: 'graph2'
             },
             function(new_s) {
+              
+              
+              
               new_s.graph.nodes().forEach(
                 function(node, i, a) {
 				          if(searchelm!="") {
@@ -70,6 +78,24 @@
                   }
                 }
               );
+              
+              filter = new sigma.plugins.filter(new_s);
+              $(document).on('shiny:inputchanged', function(event) {
+                if (event.name === 'entTypes') {
+                  filter
+                    .undo('test-filter')
+                    .nodesBy(function(n) {
+//                      console.log(n.name);
+//                      console.log(n.type);
+//                      console.log(event.value);
+//                      console.log($.inArray(n.type, event.value));
+                      //return true;
+                      return ($.inArray(n.type, event.value) > -1)
+                    },
+                    'test-filter')
+                    .apply();
+                }
+              });
 
               //Call refresh to render the new graph
               new_s.refresh();
@@ -98,6 +124,10 @@
                   Shiny.onInputChange("comm_id", e.data.node.comm_id);
               });
               s = new_s;
+              
+              
+              
+              
             }
           );
         }
@@ -109,6 +139,17 @@
       var c = document.createElement('div');
       c.setAttribute('id', 'graph2');
       p.appendChild(c);
+      
+      
+      
+      
+      
+//      $(document).on('shiny:inputchanged', function(event) {
+//        if (event.name === 'entTypes') {
+//          console.log(event.value);
+//        }
+//      });
+
     }
   );
-}).call(this)
+});
