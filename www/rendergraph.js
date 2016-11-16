@@ -1,6 +1,7 @@
 $(document).ready(function() {
   
 	var searchelm = "";
+	var current_s;
 
   Shiny.addCustomMessageHandler("updategraph",
     function(message) {
@@ -22,10 +23,11 @@ $(document).ready(function() {
         },
         function(s) {
           
+          current_s = s;
+          
           var defaultEntTypes = $("input[name='entTypes']:checked").map(function(){
             return $(this).val();
           });
-          console.log(defaultEntTypes.get());
 
           s.graph.nodes().forEach(
             function(node, i, a) {
@@ -92,42 +94,39 @@ $(document).ready(function() {
               window.console.log(e.type, e.data.node.label, e.data.captor);
               Shiny.onInputChange("comm_id", e.data.node.comm_id);
           });
-          
-          console.log("new commemmsg handler");
-          console.log(s.graph.nodes().length);
-          try {
-            Shiny.addCustomMessageHandler("commmemmsg",
-              function(message) {
-                console.log("commmemmsg");
-                JSON.parse(JSON.stringify(message), function(k, v) {
-                  if (k == "id") {
-                    var elems = String(v).split(",");
-                    console.log(s.graph.nodes().length);
-                    s.graph.nodes().forEach(
-                      function(node, i, a) {
-                        node.color = node.originalcolor;
-                        for (var ix = 0; ix < elems.length; ix++) {
-                          elem = elems[ix];
-                          if (node.id == elem) {
-                            node.color = "#FFD700";
-                          }
-                        }
-                        searchelm=elems;
-                      }
-                    );
-                    s.refresh();
-                  }
-                });
-              }
-            );
-          }
-          catch (err) {
-          }
-          
         }
       );
     }
   );
+  
+  try {
+    Shiny.addCustomMessageHandler("commmemmsg",
+      function(message) {
+        console.log("commmemmsg");
+        console.log(current_s.graph.nodes().length);
+        JSON.parse(JSON.stringify(message), function(k, v) {
+          if (k == "id") {
+            var elems = String(v).split(",");
+            current_s.graph.nodes().forEach(
+              function(node, i, a) {
+                node.color = node.originalcolor;
+                for (var ix = 0; ix < elems.length; ix++) {
+                  elem = elems[ix];
+                  if (node.id == elem) {
+                    node.color = "#FFD700";
+                  }
+                }
+                searchelm=elems;
+              }
+            );
+            current_s.refresh();
+          }
+        });
+      }
+    );
+  }
+  catch (err) {
+  }
   
   
 });

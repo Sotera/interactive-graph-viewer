@@ -359,10 +359,9 @@ function(input, output, session){
   # table click
   observe({
     row <- input$entities_table_rows_selected
-    if (length(row)){
-      print(row)
+    if (length(row)) {
       session$sendCustomMessage(type = "commmemmsg" ,
-                                message = list(id=tail(row, n=1)))
+                                message = list(id=global$nodes[row,1]))
     }
   })
   
@@ -379,6 +378,8 @@ function(input, output, session){
   
   # on-click from sigma.js
   observeEvent(input$comm_id, {
+    print("sigma node click");
+    memcommunity <- NULL
     if (is_comm_graph){
       data <- peek_top(global$viz_stack)
       graph <- data[[1]]
@@ -393,7 +394,9 @@ function(input, output, session){
       
       searchelm=input$searchentitiy
       memcomm <- NULL
-      if (is_comm_graph){
+      
+      if (vcount(graph) >  as.numeric(conf$community_threshold)) {
+      # if (is_comm_graph){
         ii<-1
         for(elm in unlist(searchelm)){
           if(length(which(elm== V(graph)$name)) != 0){
@@ -404,21 +407,24 @@ function(input, output, session){
         memcommunity<-paste(memcomm,collapse = ",")
       } else {
         memcommunity <- input$searchentitiy
-        
       }
-      observe({
-        session$sendCustomMessage(type = "commmemmsg" ,
-                                  message = list(id=memcommunity))
-      })
-      
-      
       
     }
+    else {
+      memcommunity <- input$searchentitiy
+    }
+    
+    print(memcommunity)
+    observe({
+      session$sendCustomMessage(type = "commmemmsg" ,
+                                message = list(id=memcommunity))
+    })
+    
   })
   
-  observeEvent(input$entTypes, {
-    print(input$entTypes)
-  })
+  # observeEvent(input$entTypes, {
+  #   print(input$entTypes)
+  # })
   
   observeEvent(input$variable, {
     #print(input$variable)
@@ -427,6 +433,7 @@ function(input, output, session){
   resetgraph<-function(conf)
   {
     graph <- build_initial_graph(conf)
+    is_comm_graph <- TRUE
     communities <- get_communities(graph,input$select)
     global$viz_stack <- rstack()
     global$viz_stack <- insert_top(global$viz_stack, list(graph, communities))
