@@ -33,6 +33,9 @@ function(input, output, session){
   global$viz_stack <- insert_top(s1, list(graph, communities))
   global$name <- insert_top(s2, "")
   
+  typ_colors <- conf$Type_colors
+  tcDF <- typ_colors[[1]]
+  
   # render with sigma the current graph (in json)
   output$graph_with_sigma <- renderUI({
     print("output$graph_with_sigma")
@@ -144,58 +147,47 @@ function(input, output, session){
     x<-paste(dat[,"type1"],dat[,"type2"],collapse = ",",sep=",")
     uniqueentities<<-unique(unlist(strsplit(x,",")))
     
+    uniqueentities <- unlist(tcDF[[1]])
+    
     # Create the checkboxes and select them all by default
     checkboxGroupInput("entTypes", "Entity Types",
                        choices  = uniqueentities,
                        selected = uniqueentities)
   })
   
+  # output$legend <- renderTable(tcDF)
+  
+  
+  trList = list()
+  for (i in seq_len(nrow(tcDF))) {
+    trList[[i]] <- tags$tr(
+      tags$td(span(style = sprintf(
+       "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
+       tcDF[i,2]
+      ))),
+      tags$td(tcDF[i,1])
+    )
+  }
   
   output$legend <- renderUI({
-    
-    # Create a Bootstrap-styled table
     tags$table(class = "table",
-               tags$thead(tags$tr(
-                 tags$th("Color"),
-                 tags$th("Entity")
-               )),
-               tags$tbody(
-                 tags$tr(
-                   tags$td(span(style = sprintf(
-                     "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
-                     "#77B300"
-                   ))),
-                   tags$td("Protein")
-                 ),
-                 tags$tr(
-                   tags$td(span(style = sprintf(
-                     "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
-                     "#FF8800"
-                   ))),
-                   tags$td("Chemical")
-                 ),
-                 tags$tr(
-                   tags$td(span(style = sprintf(
-                     "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
-                     "#CC0000"
-                   ))),
-                   tags$td("Disease")
-                 ),
-                 tags$tr(
-                   tags$td(span(style = sprintf(
-                     "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
-                     "#2ADDDD"
-                   ))),
-                   tags$td("Community")
-                 )
-               )
+      tags$thead(tags$tr(
+       tags$th("Color"),
+       tags$th("Entity")
+      )),
+      tags$tbody(
+       trList,
+       tags$tr(
+         tags$td(span(style = sprintf(
+           "width:1.1em; height:1.1em; background-color:%s; display:inline-block;",
+           conf$community_color
+         ))),
+         tags$td("Community")
+       )
+      )
     )
   })
-  
-  
-  
-  
-  
+
   # Populate Entity definitions dropdowns if input file is selected
   output$contents <- renderTable({
     print("output$contents")
@@ -355,7 +347,6 @@ function(input, output, session){
     
   })
   
-  
   # table click
   observe({
     row <- input$entities_table_rows_selected
@@ -364,8 +355,6 @@ function(input, output, session){
                                 message = list(id=global$nodes[row,1]))
     }
   })
-  
-  
   
   # back button
   observeEvent(input$back_button, {
@@ -422,14 +411,6 @@ function(input, output, session){
     
   })
   
-  # observeEvent(input$entTypes, {
-  #   print(input$entTypes)
-  # })
-  
-  observeEvent(input$variable, {
-    #print(input$variable)
-  })
-  
   resetgraph<-function(conf)
   {
     graph <- build_initial_graph(conf)
@@ -452,12 +433,6 @@ function(input, output, session){
     updateRadioButtons(session,"interactions",label="Show Interactions:",choices=z,selected="All")
     
     print(input$community_col)
-    # output$legend<- renderUI({
-    #   
-    #   cm<-p("Communities are ", span(input$community_col, style = paste("color:",input$community_col,sep="")))
-    #   z<-apply(colormapping,1, processrow)
-    #   return(append(z,cm))
-    # })
   }
   
   processrow<-function (elm)
@@ -504,27 +479,6 @@ function(input, output, session){
     # Remove nodes we aren't we don't want that type of node    
     dellist <- c()
     indx <- 1
-    
-    # if(input$interactions == "All")
-    #   return(list(graph, FALSE))
-    
-    for(nd in V(graph)){
-      
-      atr <- get.vertex.attribute(graph,"type",nd)
-      #print(atr)
-      # if(grepl(atr,input$interactions) == FALSE){
-      #   dellist[indx] <- nd
-      #   indx <- indx+1
-      # }
-      
-      # if(atr == "Protein") {
-      #   dellist[indx] <- nd
-      #   indx <- indx+1
-      #   print("Deleted")
-      # }
-      
-    }
-    #graph <- delete.vertices(graph,dellist)
     
     return(list(graph, FALSE))
   })
