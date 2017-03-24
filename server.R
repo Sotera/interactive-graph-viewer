@@ -11,8 +11,27 @@ source("external/protein_label_dictionary.R",local = TRUE)
 
 
 conf <- fromJSON("./www/data/config.json")
-graph <- build_initial_graph(conf)
-communities <- get_communities(graph)
+#check if rds file already exists
+graph_file_rds=paste(conf$FilePath,"_graph.rds",sep="")
+comm_file_rds=paste(conf$FilePath,"_communities.rds",sep="")
+if(!file.exists(graph_file_rds)){
+  
+  graph <- build_initial_graph(conf)
+}else{
+  print("Loading graph from rds ")
+  graph<-readRDS(graph_file_rds)
+}
+
+
+if(!file.exists(comm_file_rds)){
+  communities <- get_communities(graph)
+}else{
+  print("Loading communities from rds ")
+  communities<-readRDS(comm_file_rds)
+}
+print(conf$FilePath)
+#saveRDS(graph,paste(conf$FilePath,"_graph.rds",sep=""))
+#saveRDS(communities,paste(conf$FilePath,"_communities.rds",sep=""))
 htmlloaded = FALSE
 s1 <- rstack()
 s2 <-rstack()
@@ -484,3 +503,4 @@ function(input, output, session){
   })
   
 }
+
