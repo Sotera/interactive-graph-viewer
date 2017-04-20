@@ -30,8 +30,8 @@ if(!file.exists(comm_file_rds)){
   communities<-readRDS(comm_file_rds)
 }
 print(conf$FilePath)
-#saveRDS(graph,paste(conf$FilePath,"_graph.rds",sep=""))
-#saveRDS(communities,paste(conf$FilePath,"_communities.rds",sep=""))
+saveRDS(graph,paste(conf$FilePath,"_graph.rds",sep=""))
+saveRDS(communities,paste(conf$FilePath,"_communities.rds",sep=""))
 htmlloaded = FALSE
 s1 <- rstack()
 s2 <-rstack()
